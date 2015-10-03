@@ -15,6 +15,8 @@
 #include <GL/glu.h>
 #include "glut.h"
 
+#define PI 3.14159265
+
 // This is a sample OpenGL / GLUT program
 //
 // The objective is to draw a 3d object and change the color of the axes
@@ -31,7 +33,7 @@
 //  6. The transformations to be reset
 //  7. The program to quit
 //
-// Author:   Joe Graphics
+// Author:   Sean Rettig
 
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
@@ -42,7 +44,7 @@
 
 // title of these windows:
 
-const char *WINDOWTITLE = { "OpenGL / GLUT Sample -- Joe Graphics" };
+const char *WINDOWTITLE = { "Project 1 -- Sean Rettig" };
 const char *GLUITITLE   = { "User Interface Window" };
 
 
@@ -387,33 +389,6 @@ Display( )
     glCallList( BoxList );
 
 
-    // draw some gratuitous text that just rotates on top of the scene:
-
-    glDisable( GL_DEPTH_TEST );
-    glColor3f( 0., 1., 1. );
-    DoRasterString( 0., 1., 0., "Text That Moves" );
-
-
-    // draw some gratuitous text that is fixed on the screen:
-    //
-    // the projection matrix is reset to define a scene whose
-    // world coordinate system goes from 0-100 in each axis
-    //
-    // this is called "percent units", and is just a convenience
-    //
-    // the modelview matrix is reset to identity as we don't
-    // want to transform these coordinates
-
-    glDisable( GL_DEPTH_TEST );
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity( );
-    gluOrtho2D( 0., 100.,     0., 100. );
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity( );
-    glColor3f( 1., 1., 1. );
-    DoRasterString( 5., 5., 0., "Text That Doesn't" );
-
-
     // swap the double-buffered framebuffers:
 
     glutSwapBuffers( );
@@ -701,55 +676,47 @@ InitLists( )
     BoxList = glGenLists( 1 );
     glNewList( BoxList, GL_COMPILE );
 
-        glBegin( GL_QUADS );
+        // Draw the helix
 
+        glBegin( GL_TRIANGLE_STRIP );
             glColor3f( 0., 0., 1. );
-            glNormal3f( 0., 0.,  1. );
-                glVertex3f( -dx, -dy,  dz );
-                glVertex3f(  dx, -dy,  dz );
-                glVertex3f(  dx,  dy,  dz );
-                glVertex3f( -dx,  dy,  dz );
 
-            glNormal3f( 0., 0., -1. );
-                glTexCoord2f( 0., 0. );
-                glVertex3f( -dx, -dy, -dz );
-                glTexCoord2f( 0., 1. );
-                glVertex3f( -dx,  dy, -dz );
-                glTexCoord2f( 1., 1. );
-                glVertex3f(  dx,  dy, -dz );
-                glTexCoord2f( 1., 0. );
-                glVertex3f(  dx, -dy, -dz );
+            // Rotate in a circle
+            int rotations = 6;
+            float length = PI*2*rotations;
+            int vertices = 0;
+            int steps = 500;
+            float start_r = 0.25, start_g = 0., start_b = 0.25;
+            float end_r = 0., end_g = 1., end_b = 0.75;
+            for(float s; s < steps; s++){
+                float p = s / steps;
+                float r = (start_r * (1-p)) + (end_r * p);
+                float g = (start_g * (1-p)) + (end_g * p);
+                float b = (start_b * (1-p)) + (end_b * p);
+                glColor3f(r, g, b);
 
-            glColor3f( 1., 0., 0. );
-            glNormal3f(  1., 0., 0. );
-                glVertex3f(  dx, -dy,  dz );
-                glVertex3f(  dx, -dy, -dz );
-                glVertex3f(  dx,  dy, -dz );
-                glVertex3f(  dx,  dy,  dz );
-
-            glNormal3f( -1., 0., 0. );
-                glVertex3f( -dx, -dy,  dz );
-                glVertex3f( -dx,  dy,  dz );
-                glVertex3f( -dx,  dy, -dz );
-                glVertex3f( -dx, -dy, -dz );
-
-            glColor3f( 0., 1., 0. );
-            glNormal3f( 0.,  1., 0. );
-                glVertex3f( -dx,  dy,  dz );
-                glVertex3f(  dx,  dy,  dz );
-                glVertex3f(  dx,  dy, -dz );
-                glVertex3f( -dx,  dy, -dz );
-
-            glNormal3f( 0., -1., 0. );
-                glVertex3f( -dx, -dy,  dz );
-                glVertex3f( -dx, -dy, -dz );
-                glVertex3f(  dx, -dy, -dz );
-                glVertex3f(  dx, -dy,  dz );
-
+                float a = (s - steps/2) * (length / steps);
+                glVertex3f(cos(a), a/10, sin(a));
+                glVertex3f(cos(a)*.9, a/10, sin(a)*.9);
+                vertices += 2;
+            }
         glEnd( );
 
-    glEndList( );
+        // Draw the vertex count
 
+        glDisable( GL_DEPTH_TEST );
+        glMatrixMode( GL_PROJECTION );
+        glLoadIdentity( );
+        gluOrtho2D( 0., 100.,     0., 100. );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity( );
+        glColor3f( 1., 1., 1. );
+        char* vertices_string;
+        asprintf(&vertices_string, "vertices: %d", vertices);
+        DoRasterString( 5., 5., 0., vertices_string );
+                    
+
+    glEndList( );
 
     // create the axes:
 
