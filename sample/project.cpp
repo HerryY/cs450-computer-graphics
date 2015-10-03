@@ -11,16 +11,9 @@
 #include "glew.h"
 #endif
 
-//#include <GL/gl.h>
-//#include <GL/glu.h>
-//#include "glut.h"
-
-#include <GL/glew.h>
-#include <GL/glut.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glext.h>
-
+#include "glut.h"
 
 //	This is a sample OpenGL / GLUT program
 //
