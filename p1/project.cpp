@@ -676,18 +676,16 @@ InitLists( )
     BoxList = glGenLists( 1 );
     glNewList( BoxList, GL_COMPILE );
 
+        int rotations = 6;
+        float length = PI*2*rotations;
+        int vertices = 0;
+        int steps = 200;
+        float start_r = 0.25, start_g = 0., start_b = 0.25;
+        float end_r = 0., end_g = 1., end_b = 0.75;
+
         // Draw the helix
-
         glBegin( GL_TRIANGLE_STRIP );
-            glColor3f( 0., 0., 1. );
-
             // Rotate in a circle
-            int rotations = 6;
-            float length = PI*2*rotations;
-            int vertices = 0;
-            int steps = 500;
-            float start_r = 0.25, start_g = 0., start_b = 0.25;
-            float end_r = 0., end_g = 1., end_b = 0.75;
             for(float s; s < steps; s++){
                 float p = s / steps;
                 float r = (start_r * (1-p)) + (end_r * p);
@@ -698,6 +696,67 @@ InitLists( )
                 float a = (s - steps/2) * (length / steps);
                 glVertex3f(cos(a), a/10, sin(a));
                 glVertex3f(cos(a)*.9, a/10, sin(a)*.9);
+                vertices += 2;
+            }
+        glEnd( );
+
+        glBegin( GL_TRIANGLE_STRIP );
+            // Rotate in a circle
+            for(float s; s < steps; s++){
+                float p = s / steps;
+                float r = (start_r * (1-p)) + (end_r * p);
+                float g = (start_g * (1-p)) + (end_g * p);
+                float b = (start_b * (1-p)) + (end_b * p);
+                glColor3f(r, g, b);
+
+                float a = (s - steps/2) * (length / steps);
+                glVertex3f(cos(a), a/10+0.1, sin(a));
+                glVertex3f(cos(a)*.9, a/10+0.1, sin(a)*.9);
+                vertices += 2;
+            }
+        glEnd( );
+
+        glBegin( GL_TRIANGLE_STRIP );
+            // Rotate in a circle
+            for(float s; s < steps; s++){
+                float p = s / steps;
+                float r = (start_r * (1-p)) + (end_r * p);
+                float g = (start_g * (1-p)) + (end_g * p);
+                float b = (start_b * (1-p)) + (end_b * p);
+                glColor3f(r, g, b);
+
+                float a = (s - steps/2) * (length / steps);
+                glVertex3f(cos(a), a/10, sin(a));
+                glVertex3f(cos(a), a/10+0.1, sin(a));
+                vertices += 2;
+            }
+        glEnd( );
+
+        // Uncomment for some lines to show where the triangles are
+//        glBegin( GL_LINE_STRIP );
+//            // Rotate in a circle
+//            for(float s; s < steps; s++){
+//                glColor3f(1, 1, 1);
+//
+//                float a = (s - steps/2) * (length / steps);
+//                glVertex3f(cos(a), a/10, sin(a));
+//                glVertex3f(cos(a), a/10+0.1, sin(a));
+//                vertices += 2;
+//            }
+//        glEnd( );
+
+        glBegin( GL_TRIANGLE_STRIP );
+            // Rotate in a circle
+            for(float s; s < steps; s++){
+                float p = s / steps;
+                float r = (start_r * (1-p)) + (end_r * p);
+                float g = (start_g * (1-p)) + (end_g * p);
+                float b = (start_b * (1-p)) + (end_b * p);
+                glColor3f(r, g, b);
+
+                float a = (s - steps/2) * (length / steps);
+                glVertex3f(cos(a)*.9, a/10, sin(a)*.9);
+                glVertex3f(cos(a)*.9, a/10+0.1, sin(a)*.9);
                 vertices += 2;
             }
         glEnd( );
