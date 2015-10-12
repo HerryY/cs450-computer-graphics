@@ -769,11 +769,28 @@ MouseButton( int button, int state, int x, int y )
         case GLUT_RIGHT_BUTTON:
             b = RIGHT;  break;
 
+        case 3: // Scroll up
+            Scale += SCLFACT * 2;
+            // keep object from turning inside-out or disappearing:
+            if( Scale < MINSCALE )
+                Scale = MINSCALE;
+            glutSetWindow( MainWindow );
+            glutPostRedisplay( );
+            break;
+
+        case 4: // Scroll down
+            Scale -= SCLFACT * 2;
+            // keep object from turning inside-out or disappearing:
+            if( Scale < MINSCALE )
+                Scale = MINSCALE;
+            glutSetWindow( MainWindow );
+            glutPostRedisplay( );
+            break;
+
         default:
             b = 0;
             fprintf( stderr, "Unknown mouse button: %d\n", button );
     }
-
 
     // button down sets the bit, up clears the bit:
 
