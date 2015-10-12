@@ -677,24 +677,24 @@ InitLists( )
 
     BoxList = glGenLists( 1 );
     glNewList( BoxList, GL_COMPILE );
+        int i;
+        struct edge *ep;
+        struct point *p0, *p1;
 
-        // Draw the helix
+        glPushMatrix( );
+        glTranslatef( 0., -1., 0. );
+        glRotatef(  97.,   0., 1., 0. );
+        glRotatef( -15.,   0., 0., 1. );
         glBegin( GL_LINES );
-            glColor3f(0., 1., 0.);
-            for(int e = 0; e < Helinedges; e++){
-                //struct *edge = &Heliedges[e];
-                int edge_a = Heliedges[e].p0;
-                int edge_b = Heliedges[e].p1;
-
-                struct point *point_a = &Helipoints[edge_a];
-                struct point *point_b = &Helipoints[edge_b];
-
-                glVertex3f(point_a->x, point_a->y, point_a->z);
-                glVertex3f(point_b->x, point_b->y, point_b->z);
+            for( i=0, ep = Heliedges; i < Helinedges; i++, ep++ )
+            {
+                p0 = &Helipoints[ ep->p0 ];
+                p1 = &Helipoints[ ep->p1 ];
+                glVertex3f( p0->x, p0->y, p0->z );
+                glVertex3f( p1->x, p1->y, p1->z );
             }
         glEnd( );
-
-
+        glPopMatrix( );
     glEndList( );
 
     // create the axes:
