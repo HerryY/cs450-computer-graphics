@@ -17,6 +17,8 @@
 
 #define PI 3.14159265
 
+#include "heli.550.h"
+
 // This is a sample OpenGL / GLUT program
 //
 // The objective is to draw a 3d object and change the color of the axes
@@ -676,104 +678,22 @@ InitLists( )
     BoxList = glGenLists( 1 );
     glNewList( BoxList, GL_COMPILE );
 
-        int rotations = 6;
-        float length = PI*2*rotations;
-        int vertices = 0;
-        int steps = 200;
-        float start_r = 0.25, start_g = 0., start_b = 0.25;
-        float end_r = 0., end_g = 1., end_b = 0.75;
-
         // Draw the helix
-        glBegin( GL_TRIANGLE_STRIP );
-            // Rotate in a circle
-            for(float s; s < steps; s++){
-                float p = s / steps;
-                float r = (start_r * (1-p)) + (end_r * p);
-                float g = (start_g * (1-p)) + (end_g * p);
-                float b = (start_b * (1-p)) + (end_b * p);
-                glColor3f(r, g, b);
+        glBegin( GL_LINES );
+            glColor3f(0., 1., 0.);
+            for(int e = 0; e < Helinedges; e++){
+                //struct *edge = &Heliedges[e];
+                int edge_a = Heliedges[e].p0;
+                int edge_b = Heliedges[e].p1;
 
-                float a = (s - steps/2) * (length / steps);
-                glVertex3f(cos(a), a/10, sin(a));
-                glVertex3f(cos(a)*.9, a/10, sin(a)*.9);
-                vertices += 2;
+                struct point *point_a = &Helipoints[edge_a];
+                struct point *point_b = &Helipoints[edge_b];
+
+                glVertex3f(point_a->x, point_a->y, point_a->z);
+                glVertex3f(point_b->x, point_b->y, point_b->z);
             }
         glEnd( );
 
-        glBegin( GL_TRIANGLE_STRIP );
-            // Rotate in a circle
-            for(float s; s < steps; s++){
-                float p = s / steps;
-                float r = (start_r * (1-p)) + (end_r * p);
-                float g = (start_g * (1-p)) + (end_g * p);
-                float b = (start_b * (1-p)) + (end_b * p);
-                glColor3f(r, g, b);
-
-                float a = (s - steps/2) * (length / steps);
-                glVertex3f(cos(a), a/10+0.1, sin(a));
-                glVertex3f(cos(a)*.9, a/10+0.1, sin(a)*.9);
-                vertices += 2;
-            }
-        glEnd( );
-
-        glBegin( GL_TRIANGLE_STRIP );
-            // Rotate in a circle
-            for(float s; s < steps; s++){
-                float p = s / steps;
-                float r = (start_r * (1-p)) + (end_r * p);
-                float g = (start_g * (1-p)) + (end_g * p);
-                float b = (start_b * (1-p)) + (end_b * p);
-                glColor3f(r, g, b);
-
-                float a = (s - steps/2) * (length / steps);
-                glVertex3f(cos(a), a/10, sin(a));
-                glVertex3f(cos(a), a/10+0.1, sin(a));
-                vertices += 2;
-            }
-        glEnd( );
-
-        // Uncomment for some lines to show where the triangles are
-//        glBegin( GL_LINE_STRIP );
-//            // Rotate in a circle
-//            for(float s; s < steps; s++){
-//                glColor3f(1, 1, 1);
-//
-//                float a = (s - steps/2) * (length / steps);
-//                glVertex3f(cos(a), a/10, sin(a));
-//                glVertex3f(cos(a), a/10+0.1, sin(a));
-//                vertices += 2;
-//            }
-//        glEnd( );
-
-        glBegin( GL_TRIANGLE_STRIP );
-            // Rotate in a circle
-            for(float s; s < steps; s++){
-                float p = s / steps;
-                float r = (start_r * (1-p)) + (end_r * p);
-                float g = (start_g * (1-p)) + (end_g * p);
-                float b = (start_b * (1-p)) + (end_b * p);
-                glColor3f(r, g, b);
-
-                float a = (s - steps/2) * (length / steps);
-                glVertex3f(cos(a)*.9, a/10, sin(a)*.9);
-                glVertex3f(cos(a)*.9, a/10+0.1, sin(a)*.9);
-                vertices += 2;
-            }
-        glEnd( );
-
-        // Draw the vertex count
-
-        glDisable( GL_DEPTH_TEST );
-        glMatrixMode( GL_PROJECTION );
-        glLoadIdentity( );
-        gluOrtho2D( 0., 100.,     0., 100. );
-        glMatrixMode( GL_MODELVIEW );
-        glLoadIdentity( );
-        glColor3f( 1., 1., 1. );
-        char* vertices_string;
-        asprintf(&vertices_string, "vertices: %d", vertices);
-        DoRasterString( 5., 5., 0., vertices_string );
-                    
 
     glEndList( );
 
