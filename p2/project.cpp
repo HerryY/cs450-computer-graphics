@@ -54,7 +54,7 @@ int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
-
+float BladeAngle; // angle of big blade
 
 // function prototypes:
 
@@ -140,6 +140,9 @@ Animate( )
 {
     // put animation stuff in here -- change some global variables
     // for Display( ) to find:
+
+    BladeAngle += BLADE_SPEED;
+    if(BladeAngle >= 360.) BladeAngle = 0.;
 
     // force a call to Display( ) next time it is convenient:
 
@@ -261,15 +264,21 @@ Display( )
     // draw the big blade
 
     glPushMatrix();
-    glTranslatef(0.,2.9,-2.);
-    glCallList( BladeList );
+    glTranslatef(0., 2.9, -2.);
+    glRotatef(BladeAngle, 0., 1., 0.);
+    glScalef(5., 0., 5.);
+    glRotatef(90., 1., 0., 0.);
+    glCallList(BladeList);
     glPopMatrix();
 
     // draw the little blade
 
     glPushMatrix();
-    glTranslatef(.5,2.5,9.);
-    glCallList( BladeList );
+    glTranslatef(.5, 2.5, 9.);
+    glRotatef(BladeAngle*3, 1., 0., 0.);
+    glScalef(0., 1.5, 1.5);
+    glRotatef(90., 0., 1., 0.);
+    glCallList(BladeList);
     glPopMatrix();
 
     // swap the double-buffered framebuffers:
@@ -522,7 +531,7 @@ InitGraphics( )
     glutTabletButtonFunc( NULL );
     glutMenuStateFunc( NULL );
     glutTimerFunc( -1, NULL, 0 );
-    glutIdleFunc( NULL );
+    glutIdleFunc( Animate );
 
     // init glew (a window must be open to do this):
 
