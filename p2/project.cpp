@@ -179,7 +179,8 @@ GLuint AxesList;    // list to hold the axes
 int  AxesOn;     // != 0 means to draw the axes
 int  DebugOn;    // != 0 means to print debugging info
 int  DepthCueOn;    // != 0 means to use intensity depth cueing
-GLuint BoxList;    // object display list
+GLuint HeliList;    // object display list
+GLuint BladeList;    // object display list
 int  MainWindow;    // window id for main graphics window
 float Scale;     // scaling factor
 int  WhichColor;    // index into Colors[ ]
@@ -386,15 +387,27 @@ Display( )
     glEnable( GL_NORMALIZE );
 
 
-    // draw the current object:
+    // draw the helicopter:
 
-    glCallList( BoxList );
+    glCallList( HeliList );
 
+    // draw the big blade
+
+    glPushMatrix();
+    glTranslatef(0.,2.9,-2.);
+    glCallList( BladeList );
+    glPopMatrix();
+
+    // draw the little blade
+
+    glPushMatrix();
+    glTranslatef(.5,2.5,9.);
+    glCallList( BladeList );
+    glPopMatrix();
 
     // swap the double-buffered framebuffers:
 
     glutSwapBuffers( );
-
 
     // be sure the graphics buffer has been sent:
     // note: be sure to use glFlush( ) here, not glFinish( ) !
@@ -668,15 +681,12 @@ InitGraphics( )
 void
 InitLists( )
 {
-    float dx = BOXSIZE / 2.f;
-    float dy = BOXSIZE / 2.f;
-    float dz = BOXSIZE / 2.f;
     glutSetWindow( MainWindow );
 
-    // create the object:
+    // Create the helicopter:
 
-    BoxList = glGenLists( 1 );
-    glNewList( BoxList, GL_COMPILE );
+    HeliList = glGenLists( 1 );
+    glNewList( HeliList, GL_COMPILE );
         int i;
         struct edge *ep;
         struct point *p0, *p1;
@@ -693,6 +703,29 @@ InitLists( )
                 glVertex3f( p0->x, p0->y, p0->z );
                 glVertex3f( p1->x, p1->y, p1->z );
             }
+        glEnd( );
+        glPopMatrix( );
+    glEndList( );
+
+    // blade parameters:
+
+    #define BLADE_RADIUS             1.0
+    #define BLADE_WIDTH              0.4
+
+    // draw the helicopter blade with radius BLADE_RADIUS and
+    //      width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
+
+    BladeList = glGenLists( 1 );
+    glNewList( BladeList, GL_COMPILE );
+        glPushMatrix( );
+        glBegin( GL_TRIANGLES );
+            glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
+            glVertex2f(  0., 0. );
+            glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
+
+            glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
+            glVertex2f(  0., 0. );
+            glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
         glEnd( );
         glPopMatrix( );
     glEndList( );
