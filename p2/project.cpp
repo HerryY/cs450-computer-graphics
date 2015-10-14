@@ -13,7 +13,7 @@
 
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "glut.h"
+#include <GL/glut.h>
 
 #define PI 3.14159265
 
