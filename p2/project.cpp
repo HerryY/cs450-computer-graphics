@@ -250,15 +250,19 @@ Display( )
     // set the eye position, look-at position, and up-vector:
 
     if(view == OUTSIDE){
-        gluLookAt( camX, camY, camZ,     0., 0., 0.,     0., 1., 0. );
+        float ypos = cos(Yrot*PI/180) * Scale;
+        float hpos = sin(Yrot*PI/180) * Scale;
+        float xpos = cos(Xrot*PI/180) * Scale;
+        float zpos = sin(Xrot*PI/180) * Scale;
+        gluLookAt( xpos, ypos, zpos,     0., 0., 0.,     0., 1., 0. );
         // rotate the scene:
-        glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-        glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+        //glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+        //glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
         // uniformly scale the scene:
-        if( Scale < MINSCALE )
-            Scale = MINSCALE;
-        glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
+        //if( Scale < MINSCALE )
+        //    Scale = MINSCALE;
+        //glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
     }else{
         gluLookAt( -0.4, 1.8, -4.9,     0., 0., 0.,     Xrot, Yrot, 0. );
         glTranslatef( -0.4, 1.8, -4.9 );
@@ -830,8 +834,8 @@ MouseMotion( int x, int y )
 
     if( ( ActiveButton & LEFT ) != 0 )
     {
-        Xrot += ( ANGFACT*dy );
-        Yrot += ( ANGFACT*dx );
+        Xrot += ( ANGFACT*dx );
+        Yrot += ( ANGFACT*dy );
     }
 
 
