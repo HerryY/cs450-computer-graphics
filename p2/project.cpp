@@ -48,6 +48,8 @@ int  DebugOn;    // != 0 means to print debugging info
 int  DepthCueOn;    // != 0 means to use intensity depth cueing
 GLuint HeliList;    // object display list
 GLuint BladeList;    // object display list
+GLuint WorldList;    // object display list
+GLuint ObjectList;    // object display list
 int  MainWindow;    // window id for main graphics window
 float Scale;     // scaling factor
 int  WhichColor;    // index into Colors[ ]
@@ -328,6 +330,12 @@ Display( )
     glRotatef(90., 0., 1., 0.);
     glCallList(BladeList);
     glPopMatrix();
+
+    // draw the world:
+    glCallList( WorldList );
+
+    // draw the object:
+    glCallList( ObjectList );
 
     // swap the double-buffered framebuffers:
 
@@ -705,6 +713,34 @@ InitLists( )
         glPopMatrix( );
     glEndList( );
 
+    // Draw the world
+    WorldList = glGenLists( 1 );
+    glNewList( WorldList, GL_COMPILE );
+        glPushMatrix( );
+        glColor3f( 0.2, 0.2, 1. );
+        glBegin( GL_QUADS );
+            glVertex3f(WORLD_APOTHEM, WORLD_HEIGHT, WORLD_APOTHEM);
+            glVertex3f(WORLD_APOTHEM, WORLD_HEIGHT, -WORLD_APOTHEM);
+            glVertex3f(-WORLD_APOTHEM, WORLD_HEIGHT, -WORLD_APOTHEM);
+            glVertex3f(-WORLD_APOTHEM, WORLD_HEIGHT, WORLD_APOTHEM);
+        glEnd( );
+        glPopMatrix( );
+    glEndList( );
+
+    // Draw the object
+    ObjectList = glGenLists( 1 );
+    glNewList( ObjectList, GL_COMPILE );
+        glPushMatrix( );
+        glColor3f( 1.0, 0.6, 0.2 );
+        glBegin( GL_QUADS );
+            glVertex3f(-OBJECT_APOTHEM, WORLD_HEIGHT, -OBJECT_DISTANCE);
+            glVertex3f(OBJECT_APOTHEM, WORLD_HEIGHT, -OBJECT_DISTANCE);
+            glVertex3f(OBJECT_APOTHEM, WORLD_HEIGHT+OBJECT_HEIGHT, -OBJECT_DISTANCE);
+            glVertex3f(-OBJECT_APOTHEM, WORLD_HEIGHT+OBJECT_HEIGHT, -OBJECT_DISTANCE);
+        glEnd( );
+        glPopMatrix( );
+    glEndList( );
+
     // create the axes:
 
     AxesList = glGenLists( 1 );
@@ -868,7 +904,7 @@ Reset( )
     AxesOn = 1;
     DebugOn = 0;
     DepthCueOn = 0;
-    Scale  = 1.0;
+    Scale  = 10.0;
     WhichColor = WHITE;
     WhichProjection = PERSP;
     Xrot = Yrot = 0.;

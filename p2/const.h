@@ -3,6 +3,11 @@
 #define BLADE_SPEED              8.0
 // 0 = wireframe, 1 = solid
 #define HELI_SOLID               1
+#define WORLD_HEIGHT            -4.0
+#define WORLD_APOTHEM            20.0
+#define OBJECT_DISTANCE          15.0
+#define OBJECT_APOTHEM           1.0
+#define OBJECT_HEIGHT            3.0
 
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
