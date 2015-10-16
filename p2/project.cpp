@@ -55,6 +55,8 @@ int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
 float BladeAngle; // angle of big blade
+int view; // OUTSIDE or INSIDE
+float camX, camY, camZ; // Location of camera in outside mode
 
 // function prototypes:
 
@@ -66,6 +68,7 @@ void DoDepthMenu( int );
 void DoDebugMenu( int );
 void DoMainMenu( int );
 void DoProjectMenu( int );
+void DoViewMenu( int );
 void DoRasterString( float, float, float, char * );
 void DoStrokeString( float, float, float, float, char * );
 float ElapsedSeconds( );
@@ -246,20 +249,23 @@ Display( )
 
     // set the eye position, look-at position, and up-vector:
 
-    gluLookAt( 0., 0., 3.,     0., 0., 0.,     0., 1., 0. );
+    if(view == OUTSIDE){
+        gluLookAt( camX, camY, camZ,     0., 0., 0.,     0., 1., 0. );
+        // rotate the scene:
+        glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+        glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
-
-    // rotate the scene:
-
-    glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-    glRotatef( (GLfloat)Xrot, 1., 0., 0. );
-
-
-    // uniformly scale the scene:
-
-    if( Scale < MINSCALE )
-        Scale = MINSCALE;
-    glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
+        // uniformly scale the scene:
+        if( Scale < MINSCALE )
+            Scale = MINSCALE;
+        glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
+    }else{
+        gluLookAt( -0.4, 1.8, -4.9,     0., 0., 0.,     Xrot, Yrot, 0. );
+        glTranslatef( -0.4, 1.8, -4.9 );
+        glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+        glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+        glTranslatef( 0.4, -1.8, 4.9 );
+    }
 
 
     // set the fog parameters:
@@ -410,6 +416,16 @@ DoProjectMenu( int id )
 }
 
 
+void
+DoViewMenu( int id )
+{
+    view = id;
+
+    glutSetWindow( MainWindow );
+    glutPostRedisplay( );
+}
+
+
 // use glut to display a string of characters using a raster font:
 
 void
@@ -488,11 +504,16 @@ InitMenus( )
     glutAddMenuEntry( "Orthographic",  ORTHO );
     glutAddMenuEntry( "Perspective",   PERSP );
 
+    int viewmenu = glutCreateMenu( DoViewMenu );
+    glutAddMenuEntry( "Outside",  OUTSIDE );
+    glutAddMenuEntry( "Inside",   INSIDE );
+
     int mainmenu = glutCreateMenu( DoMainMenu );
     glutAddSubMenu(   "Axes",          axesmenu);
     glutAddSubMenu(   "Colors",        colormenu);
     glutAddSubMenu(   "Depth Cue",     depthcuemenu);
     glutAddSubMenu(   "Projection",    projmenu );
+    glutAddSubMenu(   "View",          viewmenu );
     glutAddMenuEntry( "Reset",         RESET );
     glutAddSubMenu(   "Debug",         debugmenu);
     glutAddMenuEntry( "Quit",          QUIT );
@@ -711,6 +732,11 @@ Keyboard( unsigned char c, int x, int y )
             WhichProjection = PERSP;
             break;
 
+        case 'v':
+        case 'V':
+            view = !view;
+            break;
+
         case 'q':
         case 'Q':
         case ESCAPE:
@@ -842,6 +868,11 @@ Reset( )
     WhichColor = WHITE;
     WhichProjection = PERSP;
     Xrot = Yrot = 0.;
+    BladeAngle = 0;
+    view = OUTSIDE;
+    camX = 10.;
+    camY = 10.;
+    camZ = 10.;
 }
 
 

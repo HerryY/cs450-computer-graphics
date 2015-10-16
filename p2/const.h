@@ -12,7 +12,7 @@
 
 // title of these windows:
 
-const char *WINDOWTITLE = { "Project 1 -- Sean Rettig" };
+const char *WINDOWTITLE = { "Project 2 -- Sean Rettig" };
 const char *GLUITITLE   = { "User Interface Window" };
 
 
@@ -63,6 +63,12 @@ enum Projections
 {
     ORTHO,
     PERSP
+};
+
+enum Views
+{
+    OUTSIDE,
+    INSIDE
 };
 
 
