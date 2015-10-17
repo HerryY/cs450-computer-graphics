@@ -59,6 +59,7 @@ float Xrot, Yrot;    // rotation angles in degrees
 float BladeAngle; // angle of big blade
 int view; // OUTSIDE or INSIDE
 float camX, camY, camZ; // Location of camera in outside mode
+bool    Frozen;
 
 // function prototypes:
 
@@ -770,6 +771,15 @@ Keyboard( unsigned char c, int x, int y )
         case 'p':
         case 'P':
             WhichProjection = PERSP;
+            break;
+
+        case 'f':
+        case 'F':
+            Frozen = ! Frozen;
+            if( Frozen )
+                glutIdleFunc( NULL );
+            else
+                glutIdleFunc( Animate );
             break;
 
         case 'v':
