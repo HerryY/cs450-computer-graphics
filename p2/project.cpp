@@ -925,7 +925,7 @@ void
 Reset( )
 {
     ActiveButton = 0;
-    AxesOn = 1;
+    AxesOn = 0;
     DebugOn = 0;
     DepthCueOn = 0;
     Scale  = 10.0;
