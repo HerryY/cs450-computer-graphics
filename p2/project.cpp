@@ -252,25 +252,25 @@ Display( )
     // set the eye position, look-at position, and up-vector:
 
     if(view == OUTSIDE){
-        float ypos = cos(Yrot*PI/180) * Scale;
-        float hpos = sin(Yrot*PI/180) * Scale;
-        float xpos = cos(Xrot*PI/180) * Scale;
-        float zpos = sin(Xrot*PI/180) * Scale;
-        gluLookAt( xpos, ypos, zpos,     0., 0., 0.,     0., 1., 0. );
+        //float ypos = cos(Yrot*PI/180) * Scale;
+        //float hpos = sin(Yrot*PI/180) * Scale;
+        //float xpos = cos(Xrot*PI/180) * Scale;
+        //float zpos = sin(Xrot*PI/180) * Scale;
+        gluLookAt( 100., 100., 10.,     0., 0., 0.,     0., 1., 0. );
         // rotate the scene:
-        //glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-        //glRotatef( (GLfloat)Xrot, 1., 0., 0. );
-
-        // uniformly scale the scene:
-        //if( Scale < MINSCALE )
-        //    Scale = MINSCALE;
-        //glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
-    }else{
-        gluLookAt( -0.4, 1.8, -4.9,     0., 0., 0.,     Xrot, Yrot, 0. );
-        glTranslatef( -0.4, 1.8, -4.9 );
         glRotatef( (GLfloat)Yrot, 0., 1., 0. );
         glRotatef( (GLfloat)Xrot, 1., 0., 0. );
-        glTranslatef( 0.4, -1.8, 4.9 );
+
+        // uniformly scale the scene:
+        if( Scale < MINSCALE )
+            Scale = MINSCALE;
+        glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
+    }else{
+        gluLookAt( -0.4, 1.8, -4.9,     0., 0., -OBJECT_DISTANCE,     0., 1., 0. );
+        //glTranslatef( -0.4, 1.8, -4.9 );
+        //glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+        //glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+        //glTranslatef( 0.4, -1.8, 4.9 );
     }
 
 
@@ -746,7 +746,7 @@ InitLists( )
     AxesList = glGenLists( 1 );
     glNewList( AxesList, GL_COMPILE );
         glLineWidth( AXES_WIDTH );
-            Axes( 1.5 );
+            Axes( 3. );
         glLineWidth( 1. );
     glEndList( );
 }
@@ -870,8 +870,8 @@ MouseMotion( int x, int y )
 
     if( ( ActiveButton & LEFT ) != 0 )
     {
-        Xrot += ( ANGFACT*dx );
-        Yrot += ( ANGFACT*dy );
+        Xrot += ( ANGFACT*dy );
+        Yrot += ( ANGFACT*dx );
     }
 
 
