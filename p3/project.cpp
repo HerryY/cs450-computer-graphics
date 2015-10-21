@@ -47,9 +47,6 @@ GLuint AxesList;    // list to hold the axes
 int  AxesOn;     // != 0 means to draw the axes
 int  DebugOn;    // != 0 means to print debugging info
 int  DepthCueOn;    // != 0 means to use intensity depth cueing
-GLuint HeliList;    // object display list
-GLuint BladeList;    // object display list
-GLuint WorldList;    // object display list
 GLuint ObjectList;    // object display list
 int  MainWindow;    // window id for main graphics window
 float Scale;     // scaling factor
@@ -57,10 +54,11 @@ int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
-float BladeAngle; // angle of big blade
 int view; // OUTSIDE or INSIDE
 float camX, camY, camZ; // Location of camera in outside mode
 bool    Frozen;
+unsigned char *texture;
+int texWidth, texHeight;
 
 // function prototypes:
 
@@ -184,9 +182,6 @@ Animate( )
     // put animation stuff in here -- change some global variables
     // for Display( ) to find:
 
-    BladeAngle += BLADE_SPEED;
-    if(BladeAngle >= 360.) BladeAngle = 0.;
-
     // force a call to Display( ) next time it is convenient:
 
     glutSetWindow( MainWindow );
@@ -253,28 +248,15 @@ Display( )
 
     // set the eye position, look-at position, and up-vector:
 
-    if(view == OUTSIDE){
-        //float ypos = cos(Yrot*PI/180) * Scale;
-        //float hpos = sin(Yrot*PI/180) * Scale;
-        //float xpos = cos(Xrot*PI/180) * Scale;
-        //float zpos = sin(Xrot*PI/180) * Scale;
-        gluLookAt( 100., 100., 10.,     0., 0., 0.,     0., 1., 0. );
-        // rotate the scene:
-        glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-        glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+    gluLookAt( 100., 100., 10.,     0., 0., 0.,     0., 1., 0. );
+    // rotate the scene:
+    glRotatef( (GLfloat)Yrot, 0., 1., 0. );
+    glRotatef( (GLfloat)Xrot, 1., 0., 0. );
 
-        // uniformly scale the scene:
-        if( Scale < MINSCALE )
-            Scale = MINSCALE;
-        glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
-    }else{
-        gluLookAt( -0.4, 1.8, -4.9,     0., 0., -OBJECT_DISTANCE,     0., 1., 0. );
-        //glTranslatef( -0.4, 1.8, -4.9 );
-        //glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-        //glRotatef( (GLfloat)Xrot, 1., 0., 0. );
-        //glTranslatef( 0.4, -1.8, 4.9 );
-    }
-
+    // uniformly scale the scene:
+    if( Scale < MINSCALE )
+        Scale = MINSCALE;
+    glScalef( (GLfloat)Scale, (GLfloat)Scale, (GLfloat)Scale );
 
     // set the fog parameters:
 
@@ -306,38 +288,18 @@ Display( )
 
     glEnable( GL_NORMALIZE );
 
-
-    // draw the helicopter:
-
-    glCallList( HeliList );
-
-    glColor3f( 1., 0., 1. );
-
-    // draw the big blade
-
-    glPushMatrix();
-    glTranslatef(0., 2.9, -2.);
-    glRotatef(BladeAngle, 0., 1., 0.);
-    glScalef(5., 0., 5.);
-    glRotatef(90., 1., 0., 0.);
-    glCallList(BladeList);
-    glPopMatrix();
-
-    // draw the little blade
-
-    glPushMatrix();
-    glTranslatef(.5, 2.5, 9.);
-    glRotatef(BladeAngle*3, 1., 0., 0.);
-    glScalef(0., 1.5, 1.5);
-    glRotatef(90., 0., 1., 0.);
-    glCallList(BladeList);
-    glPopMatrix();
-
-    // draw the world:
-    glCallList( WorldList );
+    // Set texture options
+    glEnable( GL_TEXTURE_2D );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 
     // draw the object:
-    glCallList( ObjectList );
+    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+    glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
+    MjbSphere( 10., 50, 50);
 
     // swap the double-buffered framebuffers:
 
@@ -619,6 +581,9 @@ InitGraphics( )
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
+    // Load texture
+    
+    texture = BmpToTexture( "worldtex.bmp", &texWidth, &texHeight );
 }
 
 
@@ -631,131 +596,6 @@ void
 InitLists( )
 {
     glutSetWindow( MainWindow );
-
-    // Create the helicopter:
-
-    HeliList = glGenLists( 1 );
-    glNewList( HeliList, GL_COMPILE );
-        if(!HELI_SOLID){
-            int i;
-            struct edge *ep;
-            struct point *p0, *p1;
-
-            glPushMatrix( );
-            glTranslatef( 0., -1., 0. );
-            glRotatef(  97.,   0., 1., 0. );
-            glRotatef( -15.,   0., 0., 1. );
-            glBegin( GL_LINES );
-                for( i=0, ep = Heliedges; i < Helinedges; i++, ep++ )
-                {
-                    p0 = &Helipoints[ ep->p0 ];
-                    p1 = &Helipoints[ ep->p1 ];
-                    glVertex3f( p0->x, p0->y, p0->z );
-                    glVertex3f( p1->x, p1->y, p1->z );
-                }
-            glEnd( );
-            glPopMatrix( );
-        }else{
-            int i;
-            struct point *p0, *p1, *p2;
-            struct tri *tp;
-            float p01[3], p02[3], n[3];
-
-            glPushMatrix( );
-            glTranslatef( 0., -1., 0. );
-            glRotatef(  97.,   0., 1., 0. );
-            glRotatef( -15.,   0., 0., 1. );
-            glBegin( GL_TRIANGLES );
-                for( i=0, tp = Helitris; i < Helintris; i++, tp++ )
-                {
-                    p0 = &Helipoints[ tp->p0 ];
-                    p1 = &Helipoints[ tp->p1 ];
-                    p2 = &Helipoints[ tp->p2 ];
-
-                    /* fake "lighting" from above:                  */
-
-                    p01[0] = p1->x - p0->x;
-                    p01[1] = p1->y - p0->y;
-                    p01[2] = p1->z - p0->z;
-                    p02[0] = p2->x - p0->x;
-                    p02[1] = p2->y - p0->y;
-                    p02[2] = p2->z - p0->z;
-                    Cross( p01, p02, n );
-                    Unit( n, n );
-                    n[1] = fabs( n[1] );
-                    n[1] += .25;
-                    if( n[1] > 1. )
-                        n[1] = 1.;
-                    glColor3f( 0., n[1], 0. );
-
-                    glVertex3f( p0->x, p0->y, p0->z );
-                    glVertex3f( p1->x, p1->y, p1->z );
-                    glVertex3f( p2->x, p2->y, p2->z );
-                }
-            glEnd( );
-            glPopMatrix( );
-        }
-    glEndList( );
-
-    // draw the helicopter blade with radius BLADE_RADIUS and
-    //      width BLADE_WIDTH centered at (0.,0.,0.) in the XY plane
-
-    BladeList = glGenLists( 1 );
-    glNewList( BladeList, GL_COMPILE );
-        glPushMatrix( );
-        glBegin( GL_TRIANGLES );
-            glVertex2f(  BLADE_RADIUS,  BLADE_WIDTH/2. );
-            glVertex2f(  0., 0. );
-            glVertex2f(  BLADE_RADIUS, -BLADE_WIDTH/2. );
-
-            glVertex2f( -BLADE_RADIUS, -BLADE_WIDTH/2. );
-            glVertex2f(  0., 0. );
-            glVertex2f( -BLADE_RADIUS,  BLADE_WIDTH/2. );
-        glEnd( );
-        glPopMatrix( );
-    glEndList( );
-
-    // Draw the world
-    WorldList = glGenLists( 1 );
-    glNewList( WorldList, GL_COMPILE );
-        glPushMatrix( );
-        glColor3f( 0.2, 0.2, 1. );
-        glBegin( GL_QUADS );
-            glVertex3f(WORLD_APOTHEM, WORLD_HEIGHT, WORLD_APOTHEM);
-            glVertex3f(WORLD_APOTHEM, WORLD_HEIGHT, -WORLD_APOTHEM);
-            glVertex3f(-WORLD_APOTHEM, WORLD_HEIGHT, -WORLD_APOTHEM);
-            glVertex3f(-WORLD_APOTHEM, WORLD_HEIGHT, WORLD_APOTHEM);
-        glEnd( );
-        glPopMatrix( );
-    glEndList( );
-
-    // Draw the object
-    ObjectList = glGenLists( 1 );
-    glNewList( ObjectList, GL_COMPILE );
-        int rotations = 6; 
-        float length = PI*2*rotations;
-        int steps = 200; 
-        float start_r = 0.25, start_g = 0., start_b = 0.25;
-        float end_r = 0., end_g = 1., end_b = 0.75;
-
-        // Draw the helix
-        glPushMatrix( );
-        glBegin( GL_TRIANGLE_STRIP );
-            // Rotate in a circle
-            for(float s; s < steps; s++){
-                float p = s / steps;
-                float r = (start_r * (1-p)) + (end_r * p);
-                float g = (start_g * (1-p)) + (end_g * p);
-                float b = (start_b * (1-p)) + (end_b * p);
-                glColor3f(r, g, b);
-
-                float a = (s - steps/2) * (length / steps);
-                glVertex3f(cos(a), a/10 + WORLD_HEIGHT+2, sin(a) - OBJECT_DISTANCE);
-                glVertex3f(cos(a), a/10 + WORLD_HEIGHT+2+0.2, sin(a) - OBJECT_DISTANCE);
-            }
-        glEnd( );
-        glPopMatrix( );
-    glEndList( );
 
     // create the axes:
 
@@ -933,7 +773,6 @@ Reset( )
     WhichColor = WHITE;
     WhichProjection = PERSP;
     Xrot = Yrot = 0.;
-    BladeAngle = 0;
     view = OUTSIDE;
     camX = 10.;
     camY = 10.;

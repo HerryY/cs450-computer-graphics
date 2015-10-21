@@ -73,8 +73,8 @@ MjbSphere( float radius, int slices, int stacks )
 			p->nz = z;
 			if( Distort )
 			{
-				p->s = ?????
-				p->t = ?????
+				p->s = 0;
+				p->t = 0;
 			}
 			else
 			{
