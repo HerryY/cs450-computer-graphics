@@ -1,5 +1,3 @@
-bool	Distort;		// global -- true means to distort the texture
-
 struct point {
 	float x, y, z;		// coordinates
 	float nx, ny, nz;	// surface normal
@@ -71,10 +69,10 @@ MjbSphere( float radius, int slices, int stacks )
 			p->nx = x;
 			p->ny = y;
 			p->nz = z;
-			if( Distort )
+			if( view == 2 )
 			{
-				p->s = 0;
-				p->t = 0;
+				p->s = ( lng + M_PI    ) / ( 2.*M_PI );
+				p->t = ( lat + M_PI/2. ) / M_PI + distort/360.;
 			}
 			else
 			{

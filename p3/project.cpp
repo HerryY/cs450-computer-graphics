@@ -17,9 +17,6 @@
 
 #define PI 3.14159265
 
-#include "bmptotexture.cpp"
-#include "sphere.cpp"
-
 #include "const.h"
 
 // This is a sample OpenGL / GLUT program
@@ -54,11 +51,14 @@ int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
-int view; // OUTSIDE or INSIDE
-float camX, camY, camZ; // Location of camera in outside mode
+int view; // 0 = no texture, 1 = texture, 2 = distorted
 bool    Frozen;
 unsigned char *texture;
 int texWidth, texHeight;
+float distort = 0.; // Amount to distort
+
+#include "bmptotexture.cpp"
+#include "sphere.cpp"
 
 // function prototypes:
 
@@ -181,6 +181,8 @@ Animate( )
 {
     // put animation stuff in here -- change some global variables
     // for Display( ) to find:
+    distort += 0.5;
+    if(distort >= 360.) distort = 0.;
 
     // force a call to Display( ) next time it is convenient:
 
@@ -248,7 +250,7 @@ Display( )
 
     // set the eye position, look-at position, and up-vector:
 
-    gluLookAt( 100., 100., 10.,     0., 0., 0.,     0., 1., 0. );
+    gluLookAt( 0., 5., 10.,     0., 0., 0.,     0., 1., 0. );
     // rotate the scene:
     glRotatef( (GLfloat)Yrot, 0., 1., 0. );
     glRotatef( (GLfloat)Xrot, 1., 0., 0. );
@@ -289,17 +291,21 @@ Display( )
     glEnable( GL_NORMALIZE );
 
     // Set texture options
-    glEnable( GL_TEXTURE_2D );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    if(view > 0){
+        glEnable( GL_TEXTURE_2D );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    }else{
+        glDisable( GL_TEXTURE_2D );
+    }
 
     // draw the object:
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
     glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
-    MjbSphere( 10., 50, 50);
+    MjbSphere( 1., 50, 50);
 
     // swap the double-buffered framebuffers:
 
@@ -396,6 +402,7 @@ void
 DoViewMenu( int id )
 {
     view = id;
+    distort = 0.;
 
     glutSetWindow( MainWindow );
     glutPostRedisplay( );
@@ -481,8 +488,9 @@ InitMenus( )
     glutAddMenuEntry( "Perspective",   PERSP );
 
     int viewmenu = glutCreateMenu( DoViewMenu );
-    glutAddMenuEntry( "Outside",  OUTSIDE );
-    glutAddMenuEntry( "Inside",   INSIDE );
+    glutAddMenuEntry( "Solid color",   0 );
+    glutAddMenuEntry( "Textured",      1 );
+    glutAddMenuEntry( "Distorted",     2 );
 
     int mainmenu = glutCreateMenu( DoMainMenu );
     glutAddSubMenu(   "Axes",          axesmenu);
@@ -602,7 +610,7 @@ InitLists( )
     AxesList = glGenLists( 1 );
     glNewList( AxesList, GL_COMPILE );
         glLineWidth( AXES_WIDTH );
-            Axes( 3. );
+            Axes( 1.5 );
         glLineWidth( 1. );
     glEndList( );
 }
@@ -639,7 +647,8 @@ Keyboard( unsigned char c, int x, int y )
 
         case 'v':
         case 'V':
-            view = !view;
+            view = (view + 1) % 3;
+            distort = 0.;
             break;
 
         case 'q':
@@ -769,14 +778,12 @@ Reset( )
     AxesOn = 0;
     DebugOn = 0;
     DepthCueOn = 0;
-    Scale  = 10.0;
+    Scale  = 2.0;
     WhichColor = WHITE;
-    WhichProjection = PERSP;
+    WhichProjection = ORTHO;
     Xrot = Yrot = 0.;
-    view = OUTSIDE;
-    camX = 10.;
-    camY = 10.;
-    camZ = 10.;
+    view = 1;
+    distort = 0;
 }
 
 

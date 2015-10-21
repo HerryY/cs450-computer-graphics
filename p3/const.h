@@ -1,14 +1,3 @@
-#define BLADE_RADIUS             1.0
-#define BLADE_WIDTH              0.4
-#define BLADE_SPEED              8.0
-// 0 = wireframe, 1 = solid
-#define HELI_SOLID               1
-#define WORLD_HEIGHT            -4.0
-#define WORLD_APOTHEM            20.0
-#define OBJECT_DISTANCE          15.0
-#define OBJECT_APOTHEM           1.0
-#define OBJECT_HEIGHT            3.0
-
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
 // to be used as an array size or as the case in a switch( ) statement.  So in
@@ -69,13 +58,6 @@ enum Projections
     ORTHO,
     PERSP
 };
-
-enum Views
-{
-    OUTSIDE,
-    INSIDE
-};
-
 
 // which button:
 
