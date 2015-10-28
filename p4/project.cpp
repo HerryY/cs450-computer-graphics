@@ -54,7 +54,7 @@ float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
 unsigned char *texture;
 int texWidth, texHeight;
-float distort = 0.; // Amount to distort
+double Time = 0.;
 
 #include "bmptotexture.cpp"
 
@@ -178,8 +178,9 @@ Animate( )
 {
     // put animation stuff in here -- change some global variables
     // for Display( ) to find:
-    distort += 0.5;
-    if(distort >= 360.) distort = 0.;
+    int ms = glutGet( GLUT_ELAPSED_TIME );
+    ms %= MS_PER_CYCLE;
+    Time = (float)ms / (float)( MS_PER_CYCLE - 1 );
 
     // force a call to Display( ) next time it is convenient:
 
@@ -287,6 +288,14 @@ Display( )
 
     glEnable( GL_NORMALIZE );
 
+    // Draw the car
+    glPushMatrix();
+    glColor3f(.5, 0., 0.);
+    glRotatef(Time*360, 0., 1., 0.);
+    glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
+    glutSolidCube(1.);
+    glPopMatrix();
+
     // Set texture options
     glEnable( GL_TEXTURE_2D );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -295,12 +304,12 @@ Display( )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 
-    // draw the object:
+    // draw the road:
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
     glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
     glCallList(RoadList);
 
-    glDisable( GL_NORMALIZE );
+    glDisable( GL_TEXTURE_2D );
 
     // swap the double-buffered framebuffers:
 
@@ -773,7 +782,6 @@ Reset( )
     WhichColor = WHITE;
     WhichProjection = PERSP;
     Xrot = Yrot = 0.;
-    distort = 0;
 }
 
 
