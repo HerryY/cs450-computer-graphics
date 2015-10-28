@@ -2,7 +2,7 @@
 
 float ROAD_APOTHEM = 10.;
 float ROAD_HEIGHT = 0.;
-int ROAD_GRANULARITY = 40;
+int ROAD_GRANULARITY = 500;
 float CAR_SIZE = 1.;
 
 // NOTE: There are a lot of good reasons to use const variables instead

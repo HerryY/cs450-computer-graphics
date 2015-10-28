@@ -189,13 +189,13 @@ SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, flo
     glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
     glLightfv( ilight, GL_SPOT_DIRECTION, Array3(xdir,ydir,zdir) );
     glLightf( ilight, GL_SPOT_EXPONENT, 1. );
-    glLightf( ilight, GL_SPOT_CUTOFF, 45. );
+    glLightf( ilight, GL_SPOT_CUTOFF, 20. );
     glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
     glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
     glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
     glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
     glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
-    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0.5 );
     glEnable( ilight );
 }
 
@@ -371,14 +371,27 @@ Display( )
     glShadeModel( GL_SMOOTH );
     //glShadeModel( GL_FLAT );
     glEnable( GL_LIGHTING );
-    SetPointLight(GL_LIGHT0, 0., 2., 0., 1., 1., 1.);
 
     // Draw the car
     glPushMatrix();
-    glColor3f(.5, 0., 0.);
-    glRotatef(Time*360, 0., 1., 0.);
-    glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
-    glutSolidCube(1.);
+        SetMaterial(0.5, 0., 0., 1.);
+        glRotatef(Time*360, 0., 1., 0.);
+        glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
+        glutSolidCube(1.);
+        // Draw the car lights
+        glDisable( GL_LIGHTING );
+        glColor3f(1., 1., 1.);
+        glPushMatrix();
+            glTranslatef(-CAR_SIZE/4., 0., -CAR_SIZE/2);
+            glutSolidSphere(0.1, 5, 5);
+            SetSpotLight(GL_LIGHT0, 0., 0., CAR_SIZE, 0., 0., -1., 1., 1., 1.);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(CAR_SIZE/4, 0., -CAR_SIZE/2);
+            glutSolidSphere(0.1, 5, 5);
+            SetSpotLight(GL_LIGHT1, 0., 0., CAR_SIZE, 0., 0., -1., 1., 1., 1.);
+        glPopMatrix();
+        glEnable( GL_LIGHTING );
     glPopMatrix();
 
     // Set texture options
@@ -389,11 +402,13 @@ Display( )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
-    // draw the road:
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
-    SetMaterial(1., 1., 1., 1.);
-    glCallList(RoadList);
+    // Draw the road
+    glPushMatrix();
+        glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+        glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
+        SetMaterial(1., 1., 1., 1.);
+        glCallList(RoadList);
+    glPopMatrix();
 
     glDisable( GL_TEXTURE_2D );
 
