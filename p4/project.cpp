@@ -56,6 +56,8 @@ unsigned char *texture;
 int texWidth, texHeight;
 double Time = 0.;
 
+float White[ ] = { 1.,1.,1.,1. };
+
 #include "bmptotexture.cpp"
 
 // function prototypes:
@@ -83,6 +85,15 @@ void Visibility( int );
 
 void Axes( float );
 void HsvRgb( float[3], float [3] );
+float Dot( float [3], float [3] );
+void Cross( float [3], float [3], float [3] );
+float Unit( float [3], float [3] );
+
+float *Array3( float, float, float );
+float *MulArray3( float, float[3] );
+void SetMaterial( float, float, float, float );
+void SetPointLight( int, float, float, float, float, float, float );
+void SetSpotLight( int, float, float, float, float, float, float, float, float, float );
 
 float
 Dot( float v1[3], float v2[3] )
@@ -118,6 +129,74 @@ Unit( float vin[3], float vout[3] )
         vout[2] = vin[2];
     }
     return dist;
+}
+
+// utility to create an array from 3 separate values:
+float *
+Array3( float a, float b, float c )
+{
+    static float array[4];
+    array[0] = a;
+    array[1] = b;
+    array[2] = c;
+    array[3] = 1.;
+    return array;
+}
+
+// utility to create an array from a multiplier and an array:
+float *
+MulArray3( float factor, float array0[3] )
+{
+    static float array[4];
+    array[0] = factor * array0[0];
+    array[1] = factor * array0[1];
+    array[2] = factor * array0[2];
+    array[3] = 1.;
+    return array;
+}
+
+void
+SetMaterial( float r, float g, float b, float shininess )
+{
+    glMaterialfv( GL_BACK, GL_EMISSION, Array3( 0., 0., 0. ) );
+    glMaterialfv( GL_BACK, GL_AMBIENT, MulArray3( .4f, White ) );
+    glMaterialfv( GL_BACK, GL_DIFFUSE, MulArray3( 1., White ) );
+    glMaterialfv( GL_BACK, GL_SPECULAR, Array3( 0., 0., 0. ) );
+    glMaterialf ( GL_BACK, GL_SHININESS, 2.f );
+    glMaterialfv( GL_FRONT, GL_EMISSION, Array3( 0., 0., 0. ) );
+    glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b ) );
+    glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b ) );
+    glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, White ) );
+    glMaterialf ( GL_FRONT, GL_SHININESS, shininess );
+}
+
+void
+SetPointLight( int ilight, float x, float y, float z, float r, float g, float b )
+{
+    glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
+    glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
+    glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
+    glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
+    glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
+    glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
+    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+    glEnable( ilight );
+}
+
+void
+SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, float zdir, float r, float g, float b )
+{
+    glLightfv( ilight, GL_POSITION, Array3( x, y, z ) );
+    glLightfv( ilight, GL_SPOT_DIRECTION, Array3(xdir,ydir,zdir) );
+    glLightf( ilight, GL_SPOT_EXPONENT, 1. );
+    glLightf( ilight, GL_SPOT_CUTOFF, 45. );
+    glLightfv( ilight, GL_AMBIENT, Array3( 0., 0., 0. ) );
+    glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
+    glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
+    glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
+    glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
+    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+    glEnable( ilight );
 }
 
 // main program:
@@ -288,6 +367,10 @@ Display( )
 
     glEnable( GL_NORMALIZE );
 
+    // Do lighting
+    glEnable( GL_LIGHTING );
+    SetPointLight(GL_LIGHT0, 0., 2., 0., 1., 1., 1.);
+
     // Draw the car
     glPushMatrix();
     glColor3f(.5, 0., 0.);
@@ -302,7 +385,7 @@ Display( )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
     // draw the road:
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
@@ -320,7 +403,6 @@ Display( )
 
     glFlush( );
 }
-
 
 void
 DoAxesMenu( int id )
