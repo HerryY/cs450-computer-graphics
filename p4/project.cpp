@@ -178,7 +178,7 @@ SetPointLight( int ilight, float x, float y, float z, float r, float g, float b 
     glLightfv( ilight, GL_DIFFUSE, Array3( r, g, b ) );
     glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
     glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
-    glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
+    glLightf ( ilight, GL_LINEAR_ATTENUATION, 0.5 );
     glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
     glEnable( ilight );
 }
@@ -368,6 +368,8 @@ Display( )
     glEnable( GL_NORMALIZE );
 
     // Do lighting
+    glShadeModel( GL_SMOOTH );
+    //glShadeModel( GL_FLAT );
     glEnable( GL_LIGHTING );
     SetPointLight(GL_LIGHT0, 0., 2., 0., 1., 1., 1.);
 
@@ -390,6 +392,7 @@ Display( )
     // draw the road:
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
     glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
+    SetMaterial(1., 1., 1., 1.);
     glCallList(RoadList);
 
     glDisable( GL_TEXTURE_2D );
@@ -690,19 +693,28 @@ InitLists( )
         glPushMatrix( );
         glBegin( GL_QUADS );
             glNormal3f(0., 1., 0.);
-            glTexCoord2f(0., 0.);
-            glVertex3f(-ROAD_APOTHEM, ROAD_HEIGHT, -ROAD_APOTHEM);
-            glTexCoord2f(0., 1.);
-            glVertex3f(ROAD_APOTHEM, ROAD_HEIGHT, -ROAD_APOTHEM);
-            glTexCoord2f(1., 1.);
-            glVertex3f(ROAD_APOTHEM, ROAD_HEIGHT, ROAD_APOTHEM);
-            glTexCoord2f(1., 0.);
-            glVertex3f(-ROAD_APOTHEM, ROAD_HEIGHT, ROAD_APOTHEM);
+            for(int x = 0; x < ROAD_GRANULARITY; x++){
+                for(int y = 0; y < ROAD_GRANULARITY; y++){
+                    float t_offset_x = ((float) x) / ((float) ROAD_GRANULARITY);
+                    float t_offset_y = ((float) y) / ((float) ROAD_GRANULARITY);
+                    float t_size = 1. / ((float) ROAD_GRANULARITY);
+                    float w_offset_x = t_offset_x*ROAD_APOTHEM*2 - ROAD_APOTHEM;
+                    float w_offset_y = t_offset_y*ROAD_APOTHEM*2 - ROAD_APOTHEM;
+                    float w_size = t_size*ROAD_APOTHEM*2;
+                    glTexCoord2f(t_offset_x, t_offset_y);
+                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y);
+                    glTexCoord2f(t_offset_x, t_offset_y + t_size);
+                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y + w_size);
+                    glTexCoord2f(t_offset_x + t_size, t_offset_y + t_size);
+                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y + w_size);
+                    glTexCoord2f(t_offset_x + t_size, t_offset_y);
+                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y);
+                }
+            }
         glEnd( );
         glPopMatrix( );
     glEndList( );
 }
-
 
 // the keyboard callback:
 
