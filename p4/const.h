@@ -1,3 +1,6 @@
+float ROAD_APOTHEM = 10.;
+float ROAD_HEIGHT = 0.;
+
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
 // to be used as an array size or as the case in a switch( ) statement.  So in

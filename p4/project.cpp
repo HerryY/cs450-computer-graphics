@@ -44,21 +44,19 @@ GLuint AxesList;    // list to hold the axes
 int  AxesOn;     // != 0 means to draw the axes
 int  DebugOn;    // != 0 means to print debugging info
 int  DepthCueOn;    // != 0 means to use intensity depth cueing
-GLuint ObjectList;    // object display list
+GLuint RoadList;    // object display list
 int  MainWindow;    // window id for main graphics window
 float Scale;     // scaling factor
 int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
-int view; // 0 = no texture, 1 = texture, 2 = distorted
 bool    Frozen;
 unsigned char *texture;
 int texWidth, texHeight;
 float distort = 0.; // Amount to distort
 
 #include "bmptotexture.cpp"
-#include "sphere.cpp"
 
 // function prototypes:
 
@@ -70,7 +68,6 @@ void DoDepthMenu( int );
 void DoDebugMenu( int );
 void DoMainMenu( int );
 void DoProjectMenu( int );
-void DoViewMenu( int );
 void DoRasterString( float, float, float, char * );
 void DoStrokeString( float, float, float, float, char * );
 float ElapsedSeconds( );
@@ -291,21 +288,19 @@ Display( )
     glEnable( GL_NORMALIZE );
 
     // Set texture options
-    if(view > 0){
-        glEnable( GL_TEXTURE_2D );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
-    }else{
-        glDisable( GL_TEXTURE_2D );
-    }
+    glEnable( GL_TEXTURE_2D );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 
     // draw the object:
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
     glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
-    MjbSphere( 1., 50, 50);
+    glCallList(RoadList);
+
+    glDisable( GL_NORMALIZE );
 
     // swap the double-buffered framebuffers:
 
@@ -398,17 +393,6 @@ DoProjectMenu( int id )
 }
 
 
-void
-DoViewMenu( int id )
-{
-    view = id;
-    distort = 0.;
-
-    glutSetWindow( MainWindow );
-    glutPostRedisplay( );
-}
-
-
 // use glut to display a string of characters using a raster font:
 
 void
@@ -487,17 +471,11 @@ InitMenus( )
     glutAddMenuEntry( "Orthographic",  ORTHO );
     glutAddMenuEntry( "Perspective",   PERSP );
 
-    int viewmenu = glutCreateMenu( DoViewMenu );
-    glutAddMenuEntry( "Solid color",   0 );
-    glutAddMenuEntry( "Textured",      1 );
-    glutAddMenuEntry( "Distorted",     2 );
-
     int mainmenu = glutCreateMenu( DoMainMenu );
     glutAddSubMenu(   "Axes",          axesmenu);
     glutAddSubMenu(   "Colors",        colormenu);
     glutAddSubMenu(   "Depth Cue",     depthcuemenu);
     glutAddSubMenu(   "Projection",    projmenu );
-    glutAddSubMenu(   "View",          viewmenu );
     glutAddMenuEntry( "Reset",         RESET );
     glutAddSubMenu(   "Debug",         debugmenu);
     glutAddMenuEntry( "Quit",          QUIT );
@@ -591,7 +569,7 @@ InitGraphics( )
 
     // Load texture
     
-    texture = BmpToTexture( "worldtex.bmp", &texWidth, &texHeight );
+    texture = BmpToTexture( "road.bmp", &texWidth, &texHeight );
 }
 
 
@@ -606,12 +584,31 @@ InitLists( )
     glutSetWindow( MainWindow );
 
     // create the axes:
-
     AxesList = glGenLists( 1 );
     glNewList( AxesList, GL_COMPILE );
+        glPushMatrix( );
         glLineWidth( AXES_WIDTH );
             Axes( 1.5 );
         glLineWidth( 1. );
+        glPopMatrix( );
+    glEndList( );
+
+    // create the road
+    RoadList = glGenLists( 1 ); 
+    glNewList( RoadList, GL_COMPILE );
+        glPushMatrix( );
+        glBegin( GL_QUADS );
+            glNormal3f(0., 1., 0.);
+            glTexCoord2f(0., 0.);
+            glVertex3f(-ROAD_APOTHEM, ROAD_HEIGHT, -ROAD_APOTHEM);
+            glTexCoord2f(0., 1.);
+            glVertex3f(ROAD_APOTHEM, ROAD_HEIGHT, -ROAD_APOTHEM);
+            glTexCoord2f(1., 1.);
+            glVertex3f(ROAD_APOTHEM, ROAD_HEIGHT, ROAD_APOTHEM);
+            glTexCoord2f(1., 0.);
+            glVertex3f(-ROAD_APOTHEM, ROAD_HEIGHT, ROAD_APOTHEM);
+        glEnd( );
+        glPopMatrix( );
     glEndList( );
 }
 
@@ -643,12 +640,6 @@ Keyboard( unsigned char c, int x, int y )
                 glutIdleFunc( NULL );
             else
                 glutIdleFunc( Animate );
-            break;
-
-        case 'v':
-        case 'V':
-            view = (view + 1) % 3;
-            distort = 0.;
             break;
 
         case 'q':
@@ -780,9 +771,8 @@ Reset( )
     DepthCueOn = 0;
     Scale  = 2.0;
     WhichColor = WHITE;
-    WhichProjection = ORTHO;
+    WhichProjection = PERSP;
     Xrot = Yrot = 0.;
-    view = 1;
     distort = 0;
 }
 
