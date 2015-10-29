@@ -374,6 +374,7 @@ Display( )
 
     // Draw the stoplight
     glPushMatrix();
+        glRotatef(15., 0., 1., 0.);
         glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
         glScalef(1., 3., 1.);
         glColor3f(0., 0., 0.);
@@ -382,9 +383,9 @@ Display( )
         glDisable( GL_LIGHTING );
 
         int light = 0;
-        if(Time < 0.4){
+        if(Time < 0.5){
             light = 0;
-        }else if(Time < 0.7){
+        }else if(Time < 0.75){
             light = 1;
         }else{
             light = 2;
@@ -432,7 +433,7 @@ Display( )
     // Draw the car
     glPushMatrix();
         SetMaterial(0.5, 0., 0., 1.);
-        glRotatef(Time*360, 0., 1., 0.);
+        glRotatef((-cos(Time*M_PI)+1)*180, 0., 1., 0.);
         glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
         glScalef(1., 1., 2.);
         glutSolidCube(1.);
