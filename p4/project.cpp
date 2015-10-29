@@ -195,7 +195,7 @@ SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, flo
     glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
     glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
     glLightf ( ilight, GL_LINEAR_ATTENUATION, 0. );
-    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0.5 );
+    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0.1 );
     glEnable( ilight );
 }
 
@@ -327,7 +327,7 @@ Display( )
 
     // set the eye position, look-at position, and up-vector:
 
-    gluLookAt( 0., 5., 10.,     0., 0., 0.,     0., 1., 0. );
+    gluLookAt( -5., 10., 22.,     0., 0., 0.,     0., 1., 0. );
     // rotate the scene:
     glRotatef( (GLfloat)Yrot, 0., 1., 0. );
     glRotatef( (GLfloat)Xrot, 1., 0., 0. );
@@ -372,24 +372,82 @@ Display( )
     //glShadeModel( GL_FLAT );
     glEnable( GL_LIGHTING );
 
+    // Draw the stoplight
+    glPushMatrix();
+        glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
+        glScalef(1., 3., 1.);
+        glColor3f(0., 0., 0.);
+        glutSolidCube(1.);
+        glScalef(1., 0.33, 1.);
+        glDisable( GL_LIGHTING );
+
+        int light = 0;
+        if(Time < 0.4){
+            light = 0;
+        }else if(Time < 0.7){
+            light = 1;
+        }else{
+            light = 2;
+        }
+
+        // Green light
+        glTranslatef(0., 0.9, 0.);
+        SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
+        if(light == 0){ // On
+            glEnable(GL_LIGHT2);
+            glColor3f(0., 1.0, 0.);
+        }else{ // Off
+            glDisable(GL_LIGHT2);
+            glColor3f(0., 0.2, 0.);
+        }
+        glutSolidSphere(0.55, 30, 30);
+
+        // Yellow light
+        glTranslatef(0., -0.9, 0.);
+        SetPointLight(GL_LIGHT3, 0., 0., 0., 1., 1., 0.);
+        if(light == 1){ // On
+            glEnable(GL_LIGHT3);
+            glColor3f(1.0, 1.0, 0.);
+        }else{ // Off
+            glDisable(GL_LIGHT3);
+            glColor3f(0.2, 0.2, 0.);
+        }
+        glutSolidSphere(0.55, 30, 30);
+
+        // Red light
+        glTranslatef(0., -0.9, 0.);
+        SetPointLight(GL_LIGHT4, 0., 0., 0., 1., 0., 0.);
+        if(light == 2){ // On
+            glEnable(GL_LIGHT4);
+            glColor3f(1.0, 0., 0.);
+        }else{ // Off
+            glDisable(GL_LIGHT4);
+            glColor3f(0.2, 0., 0.);
+        }
+        glutSolidSphere(0.55, 30, 30);
+
+        glEnable( GL_LIGHTING );
+    glPopMatrix();
+
     // Draw the car
     glPushMatrix();
         SetMaterial(0.5, 0., 0., 1.);
         glRotatef(Time*360, 0., 1., 0.);
         glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
+        glScalef(1., 1., 2.);
         glutSolidCube(1.);
         // Draw the car lights
         glDisable( GL_LIGHTING );
         glColor3f(1., 1., 1.);
         glPushMatrix();
-            glTranslatef(-CAR_SIZE/4., 0., -CAR_SIZE/2);
-            glutSolidSphere(0.1, 5, 5);
-            SetSpotLight(GL_LIGHT0, 0., 0., CAR_SIZE, 0., 0., -1., 1., 1., 1.);
+            glTranslatef(-CAR_SIZE/4., -0.2, -CAR_SIZE/2);
+            glutSolidSphere(0.1, 10, 10);
+            SetSpotLight(GL_LIGHT0, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
         glPopMatrix();
         glPushMatrix();
-            glTranslatef(CAR_SIZE/4, 0., -CAR_SIZE/2);
-            glutSolidSphere(0.1, 5, 5);
-            SetSpotLight(GL_LIGHT1, 0., 0., CAR_SIZE, 0., 0., -1., 1., 1., 1.);
+            glTranslatef(CAR_SIZE/4, -0.2, -CAR_SIZE/2);
+            glutSolidSphere(0.1, 10, 10);
+            SetSpotLight(GL_LIGHT1, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
         glPopMatrix();
         glEnable( GL_LIGHTING );
     glPopMatrix();
