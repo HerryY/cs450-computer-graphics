@@ -368,11 +368,10 @@ Display( )
     glEnable( GL_NORMALIZE );
 
     // Do lighting
-    glShadeModel( GL_SMOOTH );
-    //glShadeModel( GL_FLAT );
     glEnable( GL_LIGHTING );
 
     // Draw the stoplight
+    glShadeModel( GL_FLAT );
     glPushMatrix();
         glRotatef(15., 0., 1., 0.);
         glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
@@ -430,7 +429,16 @@ Display( )
         glEnable( GL_LIGHTING );
     glPopMatrix();
 
+    // Draw the rock
+    glShadeModel( GL_FLAT );
+    glPushMatrix();
+        SetMaterial(0.6, 0.6, 0.6, 0.);
+        glRotatef(90., 1., 0., 0.);
+        glutSolidSphere(2., 10, 10);
+    glPopMatrix();
+
     // Draw the car
+    glShadeModel( GL_FLAT );
     glPushMatrix();
         SetMaterial(0.5, 0., 0., 1.);
         glRotatef((-cos(Time*M_PI)+1)*180, 0., 1., 0.);
@@ -462,6 +470,7 @@ Display( )
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
     // Draw the road
+    glShadeModel( GL_SMOOTH );
     glPushMatrix();
         glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
         glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
