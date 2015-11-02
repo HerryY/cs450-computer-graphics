@@ -55,6 +55,11 @@ bool    Frozen;
 unsigned char *texture;
 int texWidth, texHeight;
 double Time = 0.;
+int Light0On = 1;
+int Light1On = 1;
+int Light2On = 1;
+int Light3On = 1;
+int Light4On = 1;
 
 float White[ ] = { 1.,1.,1.,1. };
 
@@ -393,7 +398,7 @@ Display( )
         // Green light
         glTranslatef(0., 0.9, 0.);
         SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
-        if(light == 0){ // On
+        if(light == 0 && Light2On){ // On
             glEnable(GL_LIGHT2);
             glColor3f(0., 1.0, 0.);
         }else{ // Off
@@ -405,7 +410,7 @@ Display( )
         // Yellow light
         glTranslatef(0., -0.9, 0.);
         SetPointLight(GL_LIGHT3, 0., 0., 0., 1., 1., 0.);
-        if(light == 1){ // On
+        if(light == 1 && Light3On){ // On
             glEnable(GL_LIGHT3);
             glColor3f(1.0, 1.0, 0.);
         }else{ // Off
@@ -417,7 +422,7 @@ Display( )
         // Red light
         glTranslatef(0., -0.9, 0.);
         SetPointLight(GL_LIGHT4, 0., 0., 0., 1., 0., 0.);
-        if(light == 2){ // On
+        if(light == 2 && Light4On){ // On
             glEnable(GL_LIGHT4);
             glColor3f(1.0, 0., 0.);
         }else{ // Off
@@ -451,12 +456,20 @@ Display( )
         glPushMatrix();
             glTranslatef(-CAR_SIZE/4., -0.2, -CAR_SIZE/2);
             glutSolidSphere(0.1, 10, 10);
-            SetSpotLight(GL_LIGHT0, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
+            if(Light0On){
+                SetSpotLight(GL_LIGHT0, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
+            }else{
+                glDisable(GL_LIGHT0);
+            }
         glPopMatrix();
         glPushMatrix();
             glTranslatef(CAR_SIZE/4, -0.2, -CAR_SIZE/2);
             glutSolidSphere(0.1, 10, 10);
-            SetSpotLight(GL_LIGHT1, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
+            if(Light1On){
+                SetSpotLight(GL_LIGHT1, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
+            }else{
+                glDisable(GL_LIGHT1);
+            }
         glPopMatrix();
         glEnable( GL_LIGHTING );
     glPopMatrix();
@@ -827,6 +840,21 @@ Keyboard( unsigned char c, int x, int y )
             else
                 glutIdleFunc( Animate );
             break;
+
+        case '0':
+            Light0On = ! Light0On; break;
+
+        case '1':
+            Light1On = ! Light1On; break;
+
+        case '2':
+            Light2On = ! Light2On; break;
+
+        case '3':
+            Light3On = ! Light3On; break;
+
+        case '4':
+            Light4On = ! Light4On; break;
 
         case 'q':
         case 'Q':
