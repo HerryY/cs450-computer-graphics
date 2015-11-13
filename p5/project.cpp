@@ -52,18 +52,9 @@ int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
-unsigned char *texture;
-int texWidth, texHeight;
 double Time = 0.;
-int Light0On = 1;
-int Light1On = 1;
-int Light2On = 1;
-int Light3On = 1;
-int Light4On = 1;
 
 float White[ ] = { 1.,1.,1.,1. };
-
-#include "bmptotexture.cpp"
 
 // function prototypes:
 
@@ -332,7 +323,7 @@ Display( )
 
     // set the eye position, look-at position, and up-vector:
 
-    gluLookAt( -5., 10., 22.,     0., 0., 0.,     0., 1., 0. );
+    gluLookAt( 0., 0., 10.,     0., 0., 0.,     0., 1., 0. );
     // rotate the scene:
     glRotatef( (GLfloat)Yrot, 0., 1., 0. );
     glRotatef( (GLfloat)Xrot, 1., 0., 0. );
@@ -358,7 +349,6 @@ Display( )
         glDisable( GL_FOG );
     }
 
-
     // possibly draw the axes:
 
     if( AxesOn != 0 )
@@ -367,7 +357,6 @@ Display( )
         glCallList( AxesList );
     }
 
-
     // since we are using glScalef( ), be sure normals get unitized:
 
     glEnable( GL_NORMALIZE );
@@ -375,123 +364,15 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
-    // Draw the stoplight
-    glShadeModel( GL_FLAT );
-    glPushMatrix();
-        glRotatef(15., 0., 1., 0.);
-        glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
-        glScalef(1., 3., 1.);
-        glColor3f(0., 0., 0.);
-        glutSolidCube(1.);
-        glScalef(1., 0.33, 1.);
-        glDisable( GL_LIGHTING );
-
-        int light = 0;
-        if(Time < 0.5){
-            light = 0;
-        }else if(Time < 0.75){
-            light = 1;
-        }else{
-            light = 2;
-        }
-
-        // Green light
-        glTranslatef(0., 0.9, 0.);
-        SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
-        if(light == 0 && Light2On){ // On
-            glEnable(GL_LIGHT2);
-            glColor3f(0., 1.0, 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT2);
-            glColor3f(0., 0.2, 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        // Yellow light
-        glTranslatef(0., -0.9, 0.);
-        SetPointLight(GL_LIGHT3, 0., 0., 0., 1., 1., 0.);
-        if(light == 1 && Light3On){ // On
-            glEnable(GL_LIGHT3);
-            glColor3f(1.0, 1.0, 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT3);
-            glColor3f(0.2, 0.2, 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        // Red light
-        glTranslatef(0., -0.9, 0.);
-        SetPointLight(GL_LIGHT4, 0., 0., 0., 1., 0., 0.);
-        if(light == 2 && Light4On){ // On
-            glEnable(GL_LIGHT4);
-            glColor3f(1.0, 0., 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT4);
-            glColor3f(0.2, 0., 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        glEnable( GL_LIGHTING );
-    glPopMatrix();
-
-    // Draw the rock
-    glShadeModel( GL_FLAT );
-    glPushMatrix();
-        SetMaterial(0.6, 0.6, 0.6, 0.);
-        glRotatef(90., 1., 0., 0.);
-        glutSolidSphere(2., 10, 10);
-    glPopMatrix();
-
-    // Draw the car
-    glShadeModel( GL_FLAT );
-    glPushMatrix();
-        SetMaterial(0.5, 0., 0., 1.);
-        glRotatef((-cos(Time*M_PI)+1)*180, 0., 1., 0.);
-        glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
-        glScalef(1., 1., 2.);
-        glutSolidCube(1.);
-        // Draw the car lights
-        glDisable( GL_LIGHTING );
-        glColor3f(1., 1., 1.);
-        glPushMatrix();
-            glTranslatef(-CAR_SIZE/4., -0.2, -CAR_SIZE/2);
-            glutSolidSphere(0.1, 10, 10);
-            if(Light0On){
-                SetSpotLight(GL_LIGHT0, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
-            }else{
-                glDisable(GL_LIGHT0);
-            }
-        glPopMatrix();
-        glPushMatrix();
-            glTranslatef(CAR_SIZE/4, -0.2, -CAR_SIZE/2);
-            glutSolidSphere(0.1, 10, 10);
-            if(Light1On){
-                SetSpotLight(GL_LIGHT1, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
-            }else{
-                glDisable(GL_LIGHT1);
-            }
-        glPopMatrix();
-        glEnable( GL_LIGHTING );
-    glPopMatrix();
-
-    // Set texture options
-    glEnable( GL_TEXTURE_2D );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // Draw the road
+    // Draw the shape
     glShadeModel( GL_SMOOTH );
     glPushMatrix();
-        glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-        glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
-        SetMaterial(1., 1., 1., 1.);
-        glCallList(RoadList);
+        SetMaterial(0.6, 1., 0.6, 0.);
+        glutSolidSphere(3, 50, 50);
     glPopMatrix();
 
-    glDisable( GL_TEXTURE_2D );
+    // Draw the light
+    SetPointLight(GL_LIGHT0, 0., 0., 5., 1., 1., 1.);
 
     // swap the double-buffered framebuffers:
 
@@ -757,9 +638,6 @@ InitGraphics( )
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
-    // Load texture
-    
-    texture = BmpToTexture( "road.bmp", &texWidth, &texHeight );
 }
 
 
@@ -840,21 +718,6 @@ Keyboard( unsigned char c, int x, int y )
             else
                 glutIdleFunc( Animate );
             break;
-
-        case '0':
-            Light0On = ! Light0On; break;
-
-        case '1':
-            Light1On = ! Light1On; break;
-
-        case '2':
-            Light2On = ! Light2On; break;
-
-        case '3':
-            Light3On = ! Light3On; break;
-
-        case '4':
-            Light4On = ! Light4On; break;
 
         case 'q':
         case 'Q':
