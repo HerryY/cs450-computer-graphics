@@ -365,14 +365,15 @@ Display( )
     glEnable( GL_LIGHTING );
 
     // Draw the shape
-    glShadeModel( GL_SMOOTH );
+    glShadeModel( GL_FLAT );
     glPushMatrix();
-        SetMaterial(0.6, 1., 0.6, 0.);
+        SetMaterial(0.6, 1., 0.6, 1.);
+        glRotatef(90., 1., 0., 0.);
         glutSolidSphere(3, 50, 50);
     glPopMatrix();
 
     // Draw the light
-    SetPointLight(GL_LIGHT0, 0., 0., 5., 1., 1., 1.);
+    SetPointLight(GL_LIGHT0, 5., 5., 5., 1., 1., 1.);
 
     // swap the double-buffered framebuffers:
 
