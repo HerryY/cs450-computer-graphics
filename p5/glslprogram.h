@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -20,7 +21,6 @@
 #ifndef GL_COMPUTE_SHADER
 #define GL_COMPUTE_SHADER	0x91B9
 #endif
-
 
 inline int GetOSU( int flag )
 {

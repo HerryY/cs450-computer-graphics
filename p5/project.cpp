@@ -11,7 +11,11 @@
 #include "glew.h"
 #endif
 
+#define VERTEX_BUFFER_OBJECT_H
+
+#include <GL/glew.h>
 #include <GL/gl.h>
+#include "glslprogram.h"
 #include <GL/glu.h>
 #include <GL/glut.h>
 
@@ -53,6 +57,8 @@ int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
 double Time = 0.;
+
+GLSLProgram *Pattern;
 
 float White[ ] = { 1.,1.,1.,1. };
 
@@ -364,6 +370,29 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
+    float S0, T0;
+    float Ds, Dt;
+    float V0, V1, V2;
+    float ColorR, ColorG, ColorB;
+
+    S0 = 0.;
+    T0 = 0.;
+    Ds = 0.;
+    Dt = 0.;
+    V0 = 0.;
+    V1 = 0.;
+    V2 = 0.;
+    ColorR = 1.;
+    ColorG = 0.;
+    ColorB = 0.;
+
+    Pattern->Use();
+    Pattern->SetUniformVariable( "uS0", S0);
+    Pattern->SetUniformVariable( "uT0", T0 );
+    Pattern->SetUniformVariable( "uDs", Ds);
+    Pattern->SetUniformVariable( "uDt", Dt );
+    Pattern->SetUniformVariable( "uColor", ColorR, ColorG, ColorB );
+
     // Draw the shape
     glShadeModel( GL_FLAT );
     glPushMatrix();
@@ -371,6 +400,8 @@ Display( )
         glRotatef(90., 1., 0., 0.);
         glutSolidSphere(3, 50, 50);
     glPopMatrix();
+
+    Pattern->Use(0);
 
     // Draw the light
     SetPointLight(GL_LIGHT0, 5., 5., 5., 1., 1., 1.);
@@ -628,7 +659,7 @@ InitGraphics( )
 
     // init glew (a window must be open to do this):
 
-#ifdef WIN32
+//#ifdef WIN32
     GLenum err = glewInit( );
     if( err != GLEW_OK )
     {
@@ -637,7 +668,13 @@ InitGraphics( )
     else
         fprintf( stderr, "GLEW initialized OK\n" );
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-#endif
+//#endif
+
+    Pattern = new GLSLProgram();
+    bool valid = Pattern->Create("project.vert", "project.frag");
+    if(!valid){
+
+    }
 
 }
 
