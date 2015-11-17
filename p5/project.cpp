@@ -372,7 +372,8 @@ Display( )
     float ColorR, ColorG, ColorB;
     float SColorR, SColorG, SColorB;
     float uKa, uKd, uKs;
-    float minx, miny, minz, maxx, maxy, maxz;
+    float pointx, pointy, pointz;
+    float maxdist;
 
     S0 = 0.;
     T0 = 0.;
@@ -385,12 +386,10 @@ Display( )
     uKa = 0.5;
     uKd = 0.5;
     uKs = 0.3;
-    minx = cos(Time*18)*2;
-    miny = cos(Time*13)*3-2;
-    minz = sin(Time*18)*2;
-    maxx = 5.;
-    maxy = 50.;
-    maxz = 50.;
+    pointx = cos(Time*18)*2;
+    pointy = cos(Time*13)*3-2;
+    pointz = sin(Time*18)*2;
+    maxdist = 5.;
 
     Pattern->Use();
     Pattern->SetUniformVariable( "uS0", S0);
@@ -400,8 +399,8 @@ Display( )
     Pattern->SetUniformVariable( "uKa", uKa );
     Pattern->SetUniformVariable( "uKd", uKd );
     Pattern->SetUniformVariable( "uKs", uKs );
-    Pattern->SetUniformVariable( "min", minx, miny, minz );
-    Pattern->SetUniformVariable( "max", maxx, maxy, maxz );
+    Pattern->SetUniformVariable( "point", pointx, pointy, pointz);
+    Pattern->SetUniformVariable( "maxdist", maxdist );
 
     // Draw the shape
     glShadeModel( GL_FLAT );

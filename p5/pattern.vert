@@ -5,8 +5,8 @@ out vec3 vN; // normal vector
 out vec3 vL; // vector from point to light
 out vec3 vE; // vector from point to eye
 
-uniform vec3 min;
-uniform vec3 max;
+uniform vec3 point;
+uniform float maxdist;
 
 flat out int inbounds;
 
@@ -24,8 +24,8 @@ main( )
     // to the eye position
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-    float dist = distance(gl_Position.xyz, min);
-    if( dist <= max.x )
+    float dist = distance(gl_Position.xyz, point);
+    if( dist <= maxdist )
     {
         inbounds = 1;
     }else{
