@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -11,15 +12,10 @@
 #include "glew.h"
 #endif
 
-#define VERTEX_BUFFER_OBJECT_H
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include "glslprogram.h"
-#include <GL/glu.h>
-#include <GL/glut.h>
-
 #define PI 3.14159265
+
+#include "glslprogram.h"
+#include "glslprogram.cpp"
 
 #include "const.h"
 
@@ -658,8 +654,6 @@ InitGraphics( )
     glutIdleFunc( Animate );
 
     // init glew (a window must be open to do this):
-
-//#ifdef WIN32
     GLenum err = glewInit( );
     if( err != GLEW_OK )
     {
@@ -668,12 +662,12 @@ InitGraphics( )
     else
         fprintf( stderr, "GLEW initialized OK\n" );
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-//#endif
 
+    // Load our shaders
     Pattern = new GLSLProgram();
-    bool valid = Pattern->Create("project.vert", "project.frag");
+    bool valid = Pattern->Create("pattern.vert", "pattern.frag");
     if(!valid){
-
+        fprintf( stderr, "Failed to create shader pattern");
     }
 
 }
@@ -696,34 +690,6 @@ InitLists( )
         glLineWidth( AXES_WIDTH );
             Axes( 1.5 );
         glLineWidth( 1. );
-        glPopMatrix( );
-    glEndList( );
-
-    // create the road
-    RoadList = glGenLists( 1 ); 
-    glNewList( RoadList, GL_COMPILE );
-        glPushMatrix( );
-        glBegin( GL_QUADS );
-            glNormal3f(0., 1., 0.);
-            for(int x = 0; x < ROAD_GRANULARITY; x++){
-                for(int y = 0; y < ROAD_GRANULARITY; y++){
-                    float t_offset_x = ((float) x) / ((float) ROAD_GRANULARITY);
-                    float t_offset_y = ((float) y) / ((float) ROAD_GRANULARITY);
-                    float t_size = 1. / ((float) ROAD_GRANULARITY);
-                    float w_offset_x = t_offset_x*ROAD_APOTHEM*2 - ROAD_APOTHEM;
-                    float w_offset_y = t_offset_y*ROAD_APOTHEM*2 - ROAD_APOTHEM;
-                    float w_size = t_size*ROAD_APOTHEM*2;
-                    glTexCoord2f(t_offset_x, t_offset_y);
-                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y);
-                    glTexCoord2f(t_offset_x, t_offset_y + t_size);
-                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y + w_size);
-                    glTexCoord2f(t_offset_x + t_size, t_offset_y + t_size);
-                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y + w_size);
-                    glTexCoord2f(t_offset_x + t_size, t_offset_y);
-                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y);
-                }
-            }
-        glEnd( );
         glPopMatrix( );
     glEndList( );
 }
