@@ -262,22 +262,25 @@ GLSLProgram::CreateHelper( char *file0, ... )
 		fclose( in ) ;
 
 		GLchar *strings[2];
-		int n = 0;
+                {
+                    int n = 0;
 
-		if( IncludeGstap )
-		{
-			strings[n] = Gstap;
-			n++;
-		}
+                    if( IncludeGstap )
+                    {
+                            strings[n] = Gstap;
+                            n++;
+                    }
 
-		strings[n] = buf;
-		n++;
+                    strings[n] = buf;
+                    n++;
 
-		// Tell GL about the source:
+                    // Tell GL about the source:
 
-		glShaderSource( shader, n, (const GLchar **)strings, NULL );
-		delete [ ] buf;
-		CheckGlErrors( "Shader Source" );
+                    glShaderSource( shader, n, (const GLchar **)strings, NULL );
+                    delete [ ] buf;
+                    CheckGlErrors( "Shader Source" );
+
+                }
 
 		// compile:
 

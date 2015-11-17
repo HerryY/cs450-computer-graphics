@@ -10,10 +10,10 @@
 #include <windows.h>
 #endif
 
-#include "glew.h"
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include "glut.h"
+#include <GL/glut.h>
 #include <map>
 #include <stdarg.h>
 

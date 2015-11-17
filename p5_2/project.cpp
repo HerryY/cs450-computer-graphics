@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -11,9 +12,8 @@
 #include "glew.h"
 #endif
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include "glslprogram.h"
+#include "glslprogram.cpp"
 
 // This is a sample OpenGL / GLUT program
 //
@@ -182,6 +182,8 @@ int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
+
+GLSLProgram *Pattern;
 
 
 // function prototypes:
@@ -382,10 +384,13 @@ Display( )
     glEnable( GL_NORMALIZE );
 
 
+    Pattern->Use();
+
     // draw the current object:
 
     glCallList( BoxList );
 
+    Pattern->Use(0);
 
     // draw some gratuitous text that just rotates on top of the scene:
 
@@ -669,7 +674,7 @@ InitGraphics( )
 
     // init glew (a window must be open to do this):
 
-#ifdef WIN32
+//#ifdef WIN32
     GLenum err = glewInit( );
     if( err != GLEW_OK )
     {
@@ -678,7 +683,14 @@ InitGraphics( )
     else
         fprintf( stderr, "GLEW initialized OK\n" );
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-#endif
+//#endif
+
+    Pattern = new GLSLProgram( );
+    bool valid = Pattern->Create( "pattern.vert", "pattern.frag" );
+    if( ! valid )
+    {
+        fprintf( stderr, "Failed to create shader pattern");
+    }
 
 }
 
