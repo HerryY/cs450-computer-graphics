@@ -19,7 +19,7 @@ main( )
     vec3 myColor = uColor;
     if(inbounds > 0)
     {
-        myColor = vec3( 0., 1., 0. );
+        myColor = vec3( 0., 0.6, 0.8 );
     }
     vec3 ambient = uKa * myColor;
     float d = max( dot(Normal,Light), 0. ); // only do diffuse if the light can see the point
@@ -31,5 +31,6 @@ main( )
         s = pow( max( dot(Eye,ref),0. ), uShininess );
     }
     vec3 specular = uKs * s * uSpecularColor;
-    gl_FragColor = vec4( ambient + diffuse + specular, 1. );
+    //gl_FragColor = vec4( ambient + diffuse + specular, 1. );
+    gl_FragColor = vec4( ambient + diffuse, 1. );
 }

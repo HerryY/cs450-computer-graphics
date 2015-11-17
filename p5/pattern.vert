@@ -24,12 +24,8 @@ main( )
     // to the eye position
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-    if( gl_Position.x >= min.x &&
-        gl_Position.y >= min.y &&
-        gl_Position.z >= min.z &&
-        gl_Position.x <= max.x &&
-        gl_Position.y <= max.y &&
-        gl_Position.z <= max.z )
+    float dist = distance(gl_Position.xyz, min);
+    if( dist <= max.x )
     {
         inbounds = 1;
     }else{

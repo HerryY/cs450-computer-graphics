@@ -376,19 +376,19 @@ Display( )
 
     S0 = 0.;
     T0 = 0.;
-    ColorR = 1.;
-    ColorG = 0.;
-    ColorB = 0.;
+    ColorR = 0.9;
+    ColorG = 0.7;
+    ColorB = 0.7;
     SColorR = 1.;
     SColorG = 1.;
     SColorB = 1.;
-    uKa = 0.3;
-    uKd = 0.3;
+    uKa = 0.5;
+    uKd = 0.5;
     uKs = 0.3;
-    minx = -10.*(1-Time);
-    miny = -50.;
-    minz = -50.;
-    maxx = 10.*(Time);
+    minx = cos(Time*18)*2;
+    miny = cos(Time*13)*3-2;
+    minz = sin(Time*18)*2;
+    maxx = 5.;
     maxy = 50.;
     maxz = 50.;
 
@@ -407,7 +407,7 @@ Display( )
     glShadeModel( GL_FLAT );
     glPushMatrix();
         SetMaterial(0.6, 1., 0.6, 1.);
-        glutSolidTeapot(2);
+        glutSolidSphere(2, 500, 500);
     glPopMatrix();
 
     Pattern->Use(0);
