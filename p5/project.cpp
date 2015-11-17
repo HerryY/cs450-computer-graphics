@@ -372,14 +372,10 @@ Display( )
     float ColorR, ColorG, ColorB;
     float SColorR, SColorG, SColorB;
     float uKa, uKd, uKs;
+    float minx, miny, minz, maxx, maxy, maxz;
 
     S0 = 0.;
     T0 = 0.;
-    Ds = 0.;
-    Dt = 0.;
-    V0 = 0.;
-    V1 = 0.;
-    V2 = 0.;
     ColorR = 1.;
     ColorG = 0.;
     ColorB = 0.;
@@ -389,17 +385,23 @@ Display( )
     uKa = 0.3;
     uKd = 0.3;
     uKs = 0.3;
+    minx = -10.*(1-Time);
+    miny = -50.;
+    minz = -50.;
+    maxx = 10.*(Time);
+    maxy = 50.;
+    maxz = 50.;
 
     Pattern->Use();
     Pattern->SetUniformVariable( "uS0", S0);
     Pattern->SetUniformVariable( "uT0", T0 );
-    Pattern->SetUniformVariable( "uDs", Ds);
-    Pattern->SetUniformVariable( "uDt", Dt );
     Pattern->SetUniformVariable( "uColor", ColorR, ColorG, ColorB );
     Pattern->SetUniformVariable( "uSpecularColor", SColorR, SColorG, SColorB );
     Pattern->SetUniformVariable( "uKa", uKa );
     Pattern->SetUniformVariable( "uKd", uKd );
     Pattern->SetUniformVariable( "uKs", uKs );
+    Pattern->SetUniformVariable( "min", minx, miny, minz );
+    Pattern->SetUniformVariable( "max", maxx, maxy, maxz );
 
     // Draw the shape
     glShadeModel( GL_FLAT );
