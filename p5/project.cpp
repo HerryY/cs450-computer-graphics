@@ -370,6 +370,8 @@ Display( )
     float Ds, Dt;
     float V0, V1, V2;
     float ColorR, ColorG, ColorB;
+    float SColorR, SColorG, SColorB;
+    float uKa, uKd, uKs;
 
     S0 = 0.;
     T0 = 0.;
@@ -381,6 +383,12 @@ Display( )
     ColorR = 1.;
     ColorG = 0.;
     ColorB = 0.;
+    SColorR = 1.;
+    SColorG = 1.;
+    SColorB = 1.;
+    uKa = 0.3;
+    uKd = 0.3;
+    uKs = 0.3;
 
     Pattern->Use();
     Pattern->SetUniformVariable( "uS0", S0);
@@ -388,6 +396,10 @@ Display( )
     Pattern->SetUniformVariable( "uDs", Ds);
     Pattern->SetUniformVariable( "uDt", Dt );
     Pattern->SetUniformVariable( "uColor", ColorR, ColorG, ColorB );
+    Pattern->SetUniformVariable( "uSpecularColor", SColorR, SColorG, SColorB );
+    Pattern->SetUniformVariable( "uKa", uKa );
+    Pattern->SetUniformVariable( "uKd", uKd );
+    Pattern->SetUniformVariable( "uKs", uKs );
 
     // Draw the shape
     glShadeModel( GL_FLAT );
