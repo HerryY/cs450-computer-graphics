@@ -393,8 +393,7 @@ Display( )
     glShadeModel( GL_FLAT );
     glPushMatrix();
         SetMaterial(0.6, 1., 0.6, 1.);
-        glRotatef(90., 1., 0., 0.);
-        glutSolidSphere(3, 50, 50);
+        glutSolidTeapot(2);
     glPopMatrix();
 
     Pattern->Use(0);

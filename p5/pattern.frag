@@ -1,7 +1,9 @@
 #version 130
-void
-main()
-{
-    gl_FragColor = vec4( .5, 1., 0., 1. );
-}
 
+in vec3 vColor;
+
+void
+main( )
+{
+    gl_FragColor = vec4( vColor, 1. );
+}
