@@ -9,6 +9,7 @@ in vec3 vN; // normal vector
 in vec3 vL; // vector from point to light
 in vec3 vE; // vector from point to eye
 flat in int inbounds;
+flat in int stripe;
 
 void
 main( )
@@ -23,6 +24,11 @@ main( )
     }
     vec3 ambient = uKa * myColor;
     float d = max( dot(Normal,Light), 0. ); // only do diffuse if the light can see the point
-    vec3 diffuse = uKd * d * uColor;
+    myColor = uColor;
+    if(stripe > 0)
+    {
+        myColor = vec3( 1., 0., 0. );
+    }
+    vec3 diffuse = uKd * d * myColor;
     gl_FragColor = vec4( ambient + diffuse, 1. );
 }

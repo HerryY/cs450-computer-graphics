@@ -9,6 +9,7 @@ uniform vec3 point;
 uniform float maxdist;
 
 flat out int inbounds;
+flat out int stripe;
 
 vec3 LightPosition = vec3( 5., 5., 0. );
 
@@ -30,5 +31,13 @@ main( )
         inbounds = 1;
     }else{
         inbounds = 0;
+    }
+
+    int stripecalc = int(round(gl_Position.x * 10));
+    if( stripecalc % 2 == 0)
+    {
+        stripe = 1;
+    }else{
+        stripe = 0;
     }
 }
