@@ -401,31 +401,69 @@ Display( )
         //glRotatef(15., 0., 1., 0.);
         //glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
         //glScalef(1., 3., 1.);
-        struct Curve curve;
         struct Point p0;
         p0.x0 = 0.;
         p0.y0 = 0.;
         p0.z0 = 0.;
+        p0.x = 0.;
+        p0.y = 0.;
+        p0.z = 0.;
         struct Point p1;
-        p1.x0 = 1.;
+        p1.x0 = 3.;
         p1.y0 = 0.;
-        p1.z0 = 0.;
+        p1.z0 = 3.;
+        p1.x = 3.;
+        p1.y = 0.;
+        p1.z = 3.;
         struct Point p2;
-        p2.x0 = 1.;
-        p2.y0 = 0.;
-        p2.z0 = 1.;
+        p2.x0 = 3.;
+        p2.y0 = 3.;
+        p2.z0 = 3.;
+        p2.x = 3.;
+        p2.y = 3.;
+        p2.z = 3.;
         struct Point p3;
-        p3.x0 = 1.;
-        p3.y0 = 1.;
-        p3.z0 = 1.;
-        curve.p0 = p0;
-        curve.p1 = p1;
-        curve.p2 = p2;
-        curve.p3 = p3;
-        curve.r = 1.;
-        curve.g = 0.;
-        curve.b = 1.;
-        DrawCurve(&curve);
+        p3.x0 = 3.;
+        p3.y0 = 6.;
+        p3.z0 = 0.;
+        p3.x = 3.;
+        p3.y = 6.;
+        p3.z = 0.;
+        //DrawCurve(&curve);
+        glLineWidth( 3. );
+        glColor3f( 1., 0., 1. );
+        glBegin( GL_LINE_STRIP );
+            for( int it = 0; it <= NUMPOINTS; it++ )
+            {
+                float t = (float)it / (float)NUMPOINTS;
+                float omt = 1.f - t;
+                float x = omt*omt*omt*p0.x + 3.f*t*omt*omt*p1.x + 3.f*t*t*omt*p2.x + t*t*t*p3.x;
+                float y = omt*omt*omt*p0.y + 3.f*t*omt*omt*p1.y + 3.f*t*t*omt*p2.y + t*t*t*p3.y;
+                float z = omt*omt*omt*p0.z + 3.f*t*omt*omt*p1.z + 3.f*t*t*omt*p2.z + t*t*t*p3.z;
+                glVertex3f( x, y, z );
+                fprintf(stderr, "drawing at %f, %f, %f\n", x, y, z);
+            }
+        glEnd( );
+        glLineWidth( 1. );
+        // Draw control lines
+        if(1){
+            glBegin( GL_LINE_STRIP );
+                glVertex3f(p0.x0, p0.y0, p0.z0);
+                glVertex3f(p1.x0, p1.y0, p1.z0);
+                glVertex3f(p2.x0, p2.y0, p2.z0);
+                glVertex3f(p3.x0, p3.y0, p3.z0);
+            glEnd( );
+        }
+        // Draw control points
+        if(1){
+            glPointSize( 5. );
+            glBegin( GL_POINTS );
+                glVertex3f(p0.x0, p0.y0, p0.z0);
+                glVertex3f(p1.x0, p1.y0, p1.z0);
+                glVertex3f(p2.x0, p2.y0, p2.z0);
+                glVertex3f(p3.x0, p3.y0, p3.z0);
+            glEnd( );
+        }
     glPopMatrix();
 
     // swap the double-buffered framebuffers:
@@ -870,7 +908,7 @@ void
 Reset( )
 {
     ActiveButton = 0;
-    AxesOn = 0;
+    AxesOn = 1;
     DebugOn = 0;
     DepthCueOn = 0;
     Scale  = 2.0;
