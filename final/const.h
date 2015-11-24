@@ -1,3 +1,12 @@
+struct block {
+    int exists; // 0 means the block is empty, 1 means it is not
+    float r;
+    float g;
+    float b;
+    float light; // Intensity of light
+};
+
+#define WORLD_SIZE 10
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
 // to be used as an array size or as the case in a switch( ) statement.  So in
@@ -70,7 +79,7 @@ enum ButtonVals
 
 // window background color (rgba):
 
-const GLfloat BACKCOLOR[ ] = { 0., 0., 0., 1. };
+const GLfloat BACKCOLOR[ ] = { .5, .7, 1., 1. };
 
 
 // line width for the axes:

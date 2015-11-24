@@ -52,18 +52,10 @@ int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
-unsigned char *texture;
-int texWidth, texHeight;
 double Time = 0.;
-int Light0On = 1;
-int Light1On = 1;
-int Light2On = 1;
-int Light3On = 1;
-int Light4On = 1;
+struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
 
 float White[ ] = { 1.,1.,1.,1. };
-
-#include "bmptotexture.cpp"
 
 // function prototypes:
 
@@ -262,9 +254,6 @@ Animate( )
 {
     // put animation stuff in here -- change some global variables
     // for Display( ) to find:
-    int ms = glutGet( GLUT_ELAPSED_TIME );
-    ms %= MS_PER_CYCLE;
-    Time = (float)ms / (float)( MS_PER_CYCLE - 1 );
 
     // force a call to Display( ) next time it is convenient:
 
@@ -375,123 +364,29 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
-    // Draw the stoplight
+    // Draw the world
     glShadeModel( GL_FLAT );
-    glPushMatrix();
-        glRotatef(15., 0., 1., 0.);
-        glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
-        glScalef(1., 3., 1.);
-        glColor3f(0., 0., 0.);
-        glutSolidCube(1.);
-        glScalef(1., 0.33, 1.);
-        glDisable( GL_LIGHTING );
-
-        int light = 0;
-        if(Time < 0.5){
-            light = 0;
-        }else if(Time < 0.75){
-            light = 1;
-        }else{
-            light = 2;
-        }
-
-        // Green light
-        glTranslatef(0., 0.9, 0.);
-        SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
-        if(light == 0 && Light2On){ // On
-            glEnable(GL_LIGHT2);
-            glColor3f(0., 1.0, 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT2);
-            glColor3f(0., 0.2, 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        // Yellow light
-        glTranslatef(0., -0.9, 0.);
-        SetPointLight(GL_LIGHT3, 0., 0., 0., 1., 1., 0.);
-        if(light == 1 && Light3On){ // On
-            glEnable(GL_LIGHT3);
-            glColor3f(1.0, 1.0, 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT3);
-            glColor3f(0.2, 0.2, 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        // Red light
-        glTranslatef(0., -0.9, 0.);
-        SetPointLight(GL_LIGHT4, 0., 0., 0., 1., 0., 0.);
-        if(light == 2 && Light4On){ // On
-            glEnable(GL_LIGHT4);
-            glColor3f(1.0, 0., 0.);
-        }else{ // Off
-            glDisable(GL_LIGHT4);
-            glColor3f(0.2, 0., 0.);
-        }
-        glutSolidSphere(0.55, 30, 30);
-
-        glEnable( GL_LIGHTING );
-    glPopMatrix();
-
-    // Draw the rock
-    glShadeModel( GL_FLAT );
-    glPushMatrix();
-        SetMaterial(0.6, 0.6, 0.6, 0.);
-        glRotatef(90., 1., 0., 0.);
-        glutSolidSphere(2., 10, 10);
-    glPopMatrix();
-
-    // Draw the car
-    glShadeModel( GL_FLAT );
-    glPushMatrix();
-        SetMaterial(0.5, 0., 0., 1.);
-        glRotatef((-cos(Time*M_PI)+1)*180, 0., 1., 0.);
-        glTranslatef(ROAD_APOTHEM*.78, ROAD_HEIGHT + CAR_SIZE/2, 0.);
-        glScalef(1., 1., 2.);
-        glutSolidCube(1.);
-        // Draw the car lights
-        glDisable( GL_LIGHTING );
-        glColor3f(1., 1., 1.);
-        glPushMatrix();
-            glTranslatef(-CAR_SIZE/4., -0.2, -CAR_SIZE/2);
-            glutSolidSphere(0.1, 10, 10);
-            if(Light0On){
-                SetSpotLight(GL_LIGHT0, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
-            }else{
-                glDisable(GL_LIGHT0);
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                glPushMatrix();
+                    struct block *b = &Blocks[x][y][z];
+                    if(b->exists){
+                        glTranslatef((float) x, (float) y, (float) z);
+                        SetMaterial(b->r, b->g, b->b, 1.);
+                        glutSolidCube(1.);
+                        if(b->light > 0.){
+                            SetPointLight(GL_LIGHT0, 0., 0., 0., 0., 1., 0.);
+                        }
+                    }
+                glPopMatrix();
             }
-        glPopMatrix();
-        glPushMatrix();
-            glTranslatef(CAR_SIZE/4, -0.2, -CAR_SIZE/2);
-            glutSolidSphere(0.1, 10, 10);
-            if(Light1On){
-                SetSpotLight(GL_LIGHT1, 0., 0., 0., 0., 0., -1., 1., 1., 1.);
-            }else{
-                glDisable(GL_LIGHT1);
-            }
-        glPopMatrix();
-        glEnable( GL_LIGHTING );
-    glPopMatrix();
-
-    // Set texture options
-    glEnable( GL_TEXTURE_2D );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-    // Draw the road
-    glShadeModel( GL_SMOOTH );
-    glPushMatrix();
-        glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-        glTexImage2D( GL_TEXTURE_2D, 0, 3, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture );
-        SetMaterial(1., 1., 1., 1.);
-        glCallList(RoadList);
-    glPopMatrix();
-
-    glDisable( GL_TEXTURE_2D );
+        }
+    }
+        //SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
+        //glEnable(GL_LIGHT2);
+        //glDisable(GL_LIGHT2);
+        //SetMaterial(0.5, 0., 0., 1.);
 
     // swap the double-buffered framebuffers:
 
@@ -757,9 +652,21 @@ InitGraphics( )
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
 
-    // Load texture
-    
-    texture = BmpToTexture( "road.bmp", &texWidth, &texHeight );
+    // Initialize blocks in the world
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                // Do a grass ground and air elsewhere
+                if(y == 0){
+                    Blocks[x][y][z] = block{1, .4, .8, 0., 0.};
+                }else{
+                    Blocks[x][y][z] = block{0, 0., 0., 0., 0.};
+                }
+            }
+        }
+    }
+    Blocks[5][5][5] = block{1, 1., 1., 0., 1.};
+
 }
 
 
@@ -780,34 +687,6 @@ InitLists( )
         glLineWidth( AXES_WIDTH );
             Axes( 1.5 );
         glLineWidth( 1. );
-        glPopMatrix( );
-    glEndList( );
-
-    // create the road
-    RoadList = glGenLists( 1 ); 
-    glNewList( RoadList, GL_COMPILE );
-        glPushMatrix( );
-        glBegin( GL_QUADS );
-            glNormal3f(0., 1., 0.);
-            for(int x = 0; x < ROAD_GRANULARITY; x++){
-                for(int y = 0; y < ROAD_GRANULARITY; y++){
-                    float t_offset_x = ((float) x) / ((float) ROAD_GRANULARITY);
-                    float t_offset_y = ((float) y) / ((float) ROAD_GRANULARITY);
-                    float t_size = 1. / ((float) ROAD_GRANULARITY);
-                    float w_offset_x = t_offset_x*ROAD_APOTHEM*2 - ROAD_APOTHEM;
-                    float w_offset_y = t_offset_y*ROAD_APOTHEM*2 - ROAD_APOTHEM;
-                    float w_size = t_size*ROAD_APOTHEM*2;
-                    glTexCoord2f(t_offset_x, t_offset_y);
-                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y);
-                    glTexCoord2f(t_offset_x, t_offset_y + t_size);
-                    glVertex3f(w_offset_x, ROAD_HEIGHT, w_offset_y + w_size);
-                    glTexCoord2f(t_offset_x + t_size, t_offset_y + t_size);
-                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y + w_size);
-                    glTexCoord2f(t_offset_x + t_size, t_offset_y);
-                    glVertex3f(w_offset_x + w_size, ROAD_HEIGHT, w_offset_y);
-                }
-            }
-        glEnd( );
         glPopMatrix( );
     glEndList( );
 }
@@ -840,21 +719,6 @@ Keyboard( unsigned char c, int x, int y )
             else
                 glutIdleFunc( Animate );
             break;
-
-        case '0':
-            Light0On = ! Light0On; break;
-
-        case '1':
-            Light1On = ! Light1On; break;
-
-        case '2':
-            Light2On = ! Light2On; break;
-
-        case '3':
-            Light3On = ! Light3On; break;
-
-        case '4':
-            Light4On = ! Light4On; break;
 
         case 'q':
         case 'Q':
