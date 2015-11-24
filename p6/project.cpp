@@ -422,6 +422,7 @@ Display( )
 
     glEnable( GL_NORMALIZE );
 
+    // Draw the flower
     glPushMatrix();
         int numcurves = 25;
         for(int c = 0; c < numcurves; c++){
@@ -438,6 +439,27 @@ Display( )
             curve.p3 = p3;
             curve.r = 1-p3.y/3;
             curve.g = p3.y/3;
+            curve.b = 0.;
+            DrawCurve(&curve);
+        }
+    glPopMatrix();
+
+    // Draw the stem
+    glPushMatrix();
+        numcurves = 5;
+        for(int c = 0; c < numcurves; c++){
+            float angle = 360. * c / numcurves;
+            struct Curve curve;
+            struct Point p0 = {0., 0., 0.};
+            struct Point p1 = {cos(angle)/5, -1., sin(angle)/5};
+            struct Point p2 = {sin(angle)/4, -2., cos(angle)/4};
+            struct Point p3 = {cos(angle)/3, -3.*(sin(angle)+1), sin(angle)/3};
+            curve.p0 = p0;
+            curve.p1 = p1;
+            curve.p2 = p2;
+            curve.p3 = p3;
+            curve.r = 0.2;
+            curve.g = 0.3;
             curve.b = 0.;
             DrawCurve(&curve);
         }

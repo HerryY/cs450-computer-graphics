@@ -10,7 +10,7 @@
 
 // title of these windows:
 
-const char *WINDOWTITLE = { "Project 6 -- Sean Rettig -- Blooming Flower" };
+const char *WINDOWTITLE = { "Project 6 -- Sean Rettig -- Blooming Rose" };
 const char *GLUITITLE   = { "User Interface Window" };
 
 
