@@ -199,7 +199,7 @@ SetSpotLight( int ilight, float x, float y, float z, float xdir, float ydir, flo
 
 struct Point
 {
-    float x0, y0, z0;       // initial coordinates
+    //float x0, y0, z0;       // initial coordinates
     float x,  y,  z;        // animated coordinates
 };
 
@@ -423,46 +423,24 @@ Display( )
     glEnable( GL_NORMALIZE );
 
     glPushMatrix();
-        //glRotatef(15., 0., 1., 0.);
-        //glTranslatef(ROAD_APOTHEM*0.78, 3., 0.);
-        //glScalef(1., 3., 1.);
-        struct Curve curve;
-        struct Point p0;
-        p0.x0 = 0.;
-        p0.y0 = 0.;
-        p0.z0 = 0.;
-        p0.x = 0.;
-        p0.y = 0.;
-        p0.z = 0.;
-        struct Point p1;
-        p1.x0 = 3.;
-        p1.y0 = 0.;
-        p1.z0 = 3.;
-        p1.x = 3.;
-        p1.y = 0.;
-        p1.z = 3.;
-        struct Point p2;
-        p2.x0 = 3.;
-        p2.y0 = 3.;
-        p2.z0 = 3.;
-        p2.x = 3.;
-        p2.y = 3.;
-        p2.z = 3.;
-        struct Point p3;
-        p3.x0 = 3.;
-        p3.y0 = 6.;
-        p3.z0 = 0.;
-        p3.x = 3.;
-        p3.y = 6.;
-        p3.z = 0.;
-        curve.p0 = p0;
-        curve.p1 = p1;
-        curve.p2 = p2;
-        curve.p3 = p3;
-        curve.r = 1.;
-        curve.g = 1.;
-        curve.b = 0.;
-        DrawCurve(&curve);
+        int numcurves = 25;
+        for(int c = 0; c < numcurves; c++){
+            float angle = 360. * c / numcurves;
+            float move = (sin(Time*2*M_PI)+1)/2.5;
+            struct Curve curve;
+            struct Point p0 = {0., 0., 0.};
+            struct Point p1 = {cos(angle)*2, 1., sin(angle)*2};
+            struct Point p2 = {cos(angle/3)*move*2, 2.-move*2, sin(angle*3)*move*2};
+            struct Point p3 = {cos(angle/2)*move*3, 3.-move*3, sin(angle/2)*move*3};
+            curve.p0 = p0;
+            curve.p1 = p1;
+            curve.p2 = p2;
+            curve.p3 = p3;
+            curve.r = 1-p3.y/3;
+            curve.g = p3.y/3;
+            curve.b = 0.;
+            DrawCurve(&curve);
+        }
     glPopMatrix();
 
     // swap the double-buffered framebuffers:
