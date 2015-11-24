@@ -5,15 +5,13 @@ Sean Rettig
 
 I imagine that you'll probably get a dozen or so of these, but it's something that I want to do!
 The project would basically be implementing a basic version of the video game Minecraft that includes:
-- A 3D world filled with textured blocks that is automatically generated
+- A 3D world filled with colored blocks that is automatically generated
 - At least 5 block types, including:
-    - At least one non-cube block
     - At least one block that emits light
-    - At least one block with different textures on each side
     - At least one block that is partially transparent
 - Lighting, including from the sun and from light blocks
 - At least one animal model (with animation and motion)
 - A player that is controlled by the user to move around and look at the world
 - The ability to place and destroy blocks
 - A third-person view for the player
-- A first-person view for the player that shows the player's hand, plus animation
+- A first-person view for the player
