@@ -54,6 +54,7 @@ float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
 double Time = 0.;
 struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
+struct player Player;
 
 float White[ ] = { 1.,1.,1.,1. };
 
@@ -91,6 +92,12 @@ float *MulArray3( float, float[3] );
 void SetMaterial( float, float, float, float );
 void SetPointLight( int, float, float, float, float, float, float );
 void SetSpotLight( int, float, float, float, float, float, float, float, float, float );
+
+double myabs(double n){
+    if(n < 0.)
+        n *= -1;
+    return n;
+}
 
 float
 Dot( float v1[3], float v2[3] )
@@ -320,11 +327,21 @@ Display( )
 
 
     // set the eye position, look-at position, and up-vector:
-
-    gluLookAt( -5., 10., 22.,     0., 0., 0.,     0., 1., 0. );
-    // rotate the scene:
-    glRotatef( (GLfloat)Yrot, 0., 1., 0. );
-    glRotatef( (GLfloat)Xrot, 1., 0., 0. );
+    float lookdy = sin(Player.av);
+    float lookdx = cos(Player.ah)*(1-myabs(lookdy));
+    float lookdz = sin(Player.ah)*(1-myabs(lookdy));
+    fprintf(stderr, "abs: %f\n", myabs(-5.));
+    fprintf(stderr, "lookd: %f, %f, %f\n", lookdx, lookdy, lookdz);
+    gluLookAt(
+            Player.x,
+            Player.y,
+            Player.z,
+            Player.x + lookdx,
+            Player.y + lookdy,
+            Player.z + lookdz,
+            0.,
+            1.,
+            0.);
 
     // uniformly scale the scene:
     if( Scale < MINSCALE )
@@ -667,6 +684,9 @@ InitGraphics( )
     }
     Blocks[5][5][5] = block{1, 1., 1., 0., 1.};
 
+    // Initialize the player
+    Player = player{5., 2., 5., 0., 0., 1., .5, .7};
+
 }
 
 
@@ -719,6 +739,9 @@ Keyboard( unsigned char c, int x, int y )
             else
                 glutIdleFunc( Animate );
             break;
+
+        case 'w':
+        case 'W':
 
         case 'q':
         case 'Q':
@@ -813,8 +836,19 @@ MouseMotion( int x, int y )
 
     if( ( ActiveButton & LEFT ) != 0 )
     {
-        Xrot += ( ANGFACT*dy );
-        Yrot += ( ANGFACT*dx );
+        // pixels moved = degrees turned, then converted to radians,
+        // since sin() and cos() use radians
+        Player.ah += ( ANGFACT*dx/180*M_PI );
+        Player.av += ( -ANGFACT*dy/180*M_PI );
+        fprintf(stderr, "Player.av: %f\n", Player.av);
+        // Stop turning past straight up/down
+        // But also make perfectly straight/up down impossible so horizontal direction is preserved
+        float max = M_PI / 2 - 0.05;
+        if(Player.av >= max){
+            Player.av = max;
+        }else if(Player.av <= -max){
+            Player.av = -max;
+        }
     }
 
 

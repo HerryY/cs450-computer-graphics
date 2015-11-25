@@ -6,6 +6,17 @@ struct block {
     float light; // Intensity of light
 };
 
+struct player {
+    float x;
+    float y;
+    float z;
+    float ah; // horizontal angle
+    float av; // vertical angle
+    float r;
+    float g;
+    float b;
+};
+
 #define WORLD_SIZE 10
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
