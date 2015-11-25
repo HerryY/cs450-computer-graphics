@@ -50,7 +50,6 @@ float Scale;     // scaling factor
 int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
-float Xrot, Yrot;    // rotation angles in degrees
 bool    Frozen;
 double Time = 0.;
 struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
@@ -685,7 +684,7 @@ InitGraphics( )
     Blocks[5][5][5] = block{1, 1., 1., 0., 1.};
 
     // Initialize the player
-    Player = player{5., 2., 5., 0., 0., 1., .5, .7};
+    Player = player{5., 3., 5., 0., 0., 1., .5, .7};
 
 }
 
@@ -742,6 +741,27 @@ Keyboard( unsigned char c, int x, int y )
 
         case 'w':
         case 'W':
+            Player.x += cos(Player.ah+M_PI*0.0);
+            Player.z += sin(Player.ah+M_PI*0.0);
+            break;
+
+        case 'd':
+        case 'D':
+            Player.x += cos(Player.ah+M_PI*0.5);
+            Player.z += sin(Player.ah+M_PI*0.5);
+            break;
+
+        case 's':
+        case 'S':
+            Player.x += cos(Player.ah+M_PI*1.0);
+            Player.z += sin(Player.ah+M_PI*1.0);
+            break;
+
+        case 'a':
+        case 'A':
+            Player.x += cos(Player.ah+M_PI*1.5);
+            Player.z += sin(Player.ah+M_PI*1.5);
+            break;
 
         case 'q':
         case 'Q':
@@ -851,17 +871,6 @@ MouseMotion( int x, int y )
         }
     }
 
-
-    if( ( ActiveButton & MIDDLE ) != 0 )
-    {
-        Scale += SCLFACT * (float) ( dx - dy );
-
-        // keep object from turning inside-out or disappearing:
-
-        if( Scale < MINSCALE )
-            Scale = MINSCALE;
-    }
-
     Xmouse = x;   // new current position
     Ymouse = y;
 
@@ -884,7 +893,6 @@ Reset( )
     Scale  = 2.0;
     WhichColor = WHITE;
     WhichProjection = PERSP;
-    Xrot = Yrot = 0.;
 }
 
 
