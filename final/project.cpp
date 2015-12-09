@@ -157,7 +157,7 @@ Array3( float a, float b, float c )
 
 // utility to create an array from 4 separate values:
 float *
-Array3( float a, float b, float c, float d )
+Array4( float a, float b, float c, float d )
 {
     static float array[4];
     array[0] = a;
@@ -188,8 +188,8 @@ SetMaterial( float r, float g, float b, float a, float shininess )
     glMaterialfv( GL_BACK, GL_SPECULAR, Array3( 0., 0., 0. ) );
     glMaterialf ( GL_BACK, GL_SHININESS, 2.f );
     glMaterialfv( GL_FRONT, GL_EMISSION, Array3( 0., 0., 0. ) );
-    glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b, a ) );
-    glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b, a ) );
+    glMaterialfv( GL_FRONT, GL_AMBIENT, Array4( r, g, b, a ) );
+    glMaterialfv( GL_FRONT, GL_DIFFUSE, Array4( r, g, b, a ) );
     glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, White ) );
     glMaterialf ( GL_FRONT, GL_SHININESS, shininess );
 }
@@ -342,12 +342,12 @@ InitGame()
         }
     }
 
-    // Add some ground
+    // Add some grass
     for(int z = 0; z < WORLD_SIZE; z++){
         for(int y = 0; y < WORLD_SIZE; y++){
             for(int x = 0; x < WORLD_SIZE; x++){
-                float h = myabs(sin(x/5+3.3)) + myabs(cos(z/5+1)*1.8);
-                fprintf(stderr, "h: %f\n", h);
+                float h = myabs(sin(x/5+3)) + myabs(sin(x/2+6)) + myabs(sin(x/9+4)) + myabs(sin(z/7+13)) + myabs(sin(z/3+5)) + myabs(sin(z/4+1));
+                h *= 0.7;
                 if(y < h){
                     PlaceBlock(x, y, z, block{1, .4, .8, 0., 1., 0.});
                 }
@@ -355,12 +355,28 @@ InitGame()
         }
     }
 
+    // Add some dirt and stone
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                if(y == 0){
+                    PlaceBlock(x, y, z, block{1, .5, .5, .5, 1., 0.}); // Stone
+                }
+                if(y == 1){
+                    PlaceBlock(x, y, z, block{1, .4, .3, .0, 1., 0.}); // Dirt
+                }
+            }
+        }
+    }
+
     // Place some light blocks
-    PlaceBlock(5, 3, 2, block{1, 1., 1., .8, 1., 1.});
-    PlaceBlock(5, 5, 7, block{1, 1., 1., .8, 1., 1.});
+    PlaceBlock(WORLD_SIZE/2, WORLD_SIZE-1, WORLD_SIZE/2, block{1, 1., 1., .8, 1., 1.}); // sun
+    PlaceBlock(5, 5, 2, block{1, 1., 1., .8, 1., 1.});
+    PlaceBlock(15, 6, 15, block{1, 1., 1., 1., 1., 1.});
+    PlaceBlock(3, 4, 25, block{1, .4, 0., 1., 1., 1.});
 
     // Place some transparent blocks
-    PlaceBlock(7, 2, 3, block{1, 1., 0., 0., 0.5, 0.});
+    PlaceBlock(7, 4, 3, block{1, 1., 0., 0., 0.5, 0.});
 
     // Initialize the player
     Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7, .5};
@@ -553,6 +569,7 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
+    // Create the lights for the light blocks
     for(int i = 0; i < MAX_LIGHTS; i++){
         struct light *light = &Lights[i];
         if(light->exists){
