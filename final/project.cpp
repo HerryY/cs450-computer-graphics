@@ -203,7 +203,7 @@ SetPointLight( int ilight, float x, float y, float z, float r, float g, float b 
     glLightfv( ilight, GL_SPECULAR, Array3( r, g, b ) );
     glLightf ( ilight, GL_CONSTANT_ATTENUATION, 1. );
     glLightf ( ilight, GL_LINEAR_ATTENUATION, 0.5 );
-    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0. );
+    glLightf ( ilight, GL_QUADRATIC_ATTENUATION, 0.1 );
     glEnable( ilight );
 }
 
@@ -301,8 +301,7 @@ PlaceBlock(float x, float y, float z, struct block b)
     if(b.light > 0.){
         int lightid = FindFreeLight();
         if(lightid >= 0){
-            Lights[lightid] = light{1, x, y, z};
-            SetPointLight(GL_LIGHT0+lightid, x, y, z, b.r, b.g, b.b);
+            Lights[lightid] = light{1, x, y, z, b.r, b.g, b.b};
         }else{
             fprintf(stderr, "Cannot create light; already have max number (%d)\n", MAX_LIGHTS);
             return 0;
@@ -320,8 +319,7 @@ BreakBlock(float x, float y, float z)
     if(b->light > 0.){
         int lightid = FindExistingLight(x, y, z);
         if(lightid >= 0){
-            Lights[lightid] = light{0, 0., 0., 0.};
-            glDisable(GL_LIGHT0+lightid);
+            Lights[lightid] = light{0, 0., 0., 0., 0., 0., 0.};
         }else{
             fprintf(stderr, "Cannot destroy light; could not find light at (%f, %f, %f)\n", x, y, z);
             return 0;
@@ -335,26 +333,34 @@ BreakBlock(float x, float y, float z)
 void
 InitGame()
 {
-    // Initialize blocks in the world
+    // Initialize blocks in the world to air
     for(int z = 0; z < WORLD_SIZE; z++){
         for(int y = 0; y < WORLD_SIZE; y++){
             for(int x = 0; x < WORLD_SIZE; x++){
-                // Do a grass ground and air elsewhere
-                if(y == 0){
+                BreakBlock(x, y, z);
+            }
+        }
+    }
+
+    // Add some ground
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                float h = myabs(sin(x/5+3.3)) + myabs(cos(z/5+1)*1.8);
+                fprintf(stderr, "h: %f\n", h);
+                if(y < h){
                     PlaceBlock(x, y, z, block{1, .4, .8, 0., 1., 0.});
-                }else{
-                    BreakBlock(x, y, z);
                 }
             }
         }
     }
 
     // Place some light blocks
-    PlaceBlock(5, 3, 2, block{1, 1., 1., 1., 1., 1.});
-    PlaceBlock(5, 5, 7, block{1, 1., 1., 1., 1., 1.});
+    PlaceBlock(5, 3, 2, block{1, 1., 1., .8, 1., 1.});
+    PlaceBlock(5, 5, 7, block{1, 1., 1., .8, 1., 1.});
 
     // Place some transparent blocks
-    PlaceBlock(7, 1, 3, block{1, 1., 0., 0., 0.5, 0.});
+    PlaceBlock(7, 2, 3, block{1, 1., 0., 0., 0.5, 0.});
 
     // Initialize the player
     Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7, .5};
@@ -485,7 +491,6 @@ Display( )
 
     // First person
     if(View == 0){
-        fprintf(stderr, "Camera pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
         gluLookAt(
                 Player.x,
                 Player.y,
@@ -498,7 +503,6 @@ Display( )
                 0.);
     // Third person
     }else{
-        fprintf(stderr, "Camera pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
         gluLookAt(
                 Player.x - lookdx*10,
                 Player.y - lookdy*10,
@@ -549,6 +553,15 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
+    for(int i = 0; i < MAX_LIGHTS; i++){
+        struct light *light = &Lights[i];
+        if(light->exists){
+            SetPointLight(GL_LIGHT0+i, light->x, light->y, light->z, light->r, light->g, light->b);
+        }else{
+            glDisable(GL_LIGHT0+i);
+        }
+    }
+
     // Draw the non-transparent objects in the world
     glShadeModel( GL_FLAT );
     for(int z = 0; z < WORLD_SIZE; z++){
@@ -558,10 +571,16 @@ Display( )
                 if(b->a == 1.){
                     if(b->exists){
                         glPushMatrix();
+                            if(b->light > 0.){
+                                glDisable( GL_LIGHTING );
+                                glColor3f(b->r, b->g, b->b);
+                            }else{
+                                SetMaterial(b->r, b->g, b->b, b->a, 1.);
+                            }
                             glTranslatef((float) x, (float) y, (float) z);
-                            SetMaterial(b->r, b->g, b->b, b->a, 1.);
                             glutSolidCube(1.);
                         glPopMatrix();
+                        glEnable( GL_LIGHTING );
                     }
                 }
             }
@@ -950,8 +969,15 @@ Keyboard( unsigned char c, int x, int y )
             Player.vz += sin(Player.ah+M_PI*1.5);
             break;
 
+        case ' ':
+            Player.vy += 1.;
+            break;
+
         case 'q':
         case 'Q':
+            Player.vy -= 1.;
+            break;
+
         case ESCAPE:
             DoMainMenu( QUIT ); // will not return here
             break;    // happy compiler

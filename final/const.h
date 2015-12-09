@@ -1,5 +1,5 @@
 #define TICKS_PER_SECOND 30
-#define WORLD_SIZE 10
+#define WORLD_SIZE 30
 #define VELOCITY_DROPOFF 0.8
 #define MAX_VELOCITY 1.
 #define MAX_LIGHTS 10
@@ -36,6 +36,9 @@ struct light {
     float x;
     float y;
     float z;
+    float r;
+    float g;
+    float b;
 };
 
 // NOTE: There are a lot of good reasons to use const variables instead
