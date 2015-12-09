@@ -9,6 +9,7 @@ struct block {
     float r;
     float g;
     float b;
+    float a;
     float light; // Intensity of light
 };
 

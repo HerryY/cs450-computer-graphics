@@ -96,7 +96,7 @@ float Unit( float [3], float [3] );
 
 float *Array3( float, float, float );
 float *MulArray3( float, float[3] );
-void SetMaterial( float, float, float, float );
+void SetMaterial( float, float, float, float, float );
 void SetPointLight( int, float, float, float, float, float, float );
 void SetSpotLight( int, float, float, float, float, float, float, float, float, float );
 
@@ -154,6 +154,18 @@ Array3( float a, float b, float c )
     return array;
 }
 
+// utility to create an array from 4 separate values:
+float *
+Array3( float a, float b, float c, float d )
+{
+    static float array[4];
+    array[0] = a;
+    array[1] = b;
+    array[2] = c;
+    array[3] = d;
+    return array;
+}
+
 // utility to create an array from a multiplier and an array:
 float *
 MulArray3( float factor, float array0[3] )
@@ -167,7 +179,7 @@ MulArray3( float factor, float array0[3] )
 }
 
 void
-SetMaterial( float r, float g, float b, float shininess )
+SetMaterial( float r, float g, float b, float a, float shininess )
 {
     glMaterialfv( GL_BACK, GL_EMISSION, Array3( 0., 0., 0. ) );
     glMaterialfv( GL_BACK, GL_AMBIENT, MulArray3( .4f, White ) );
@@ -175,8 +187,8 @@ SetMaterial( float r, float g, float b, float shininess )
     glMaterialfv( GL_BACK, GL_SPECULAR, Array3( 0., 0., 0. ) );
     glMaterialf ( GL_BACK, GL_SHININESS, 2.f );
     glMaterialfv( GL_FRONT, GL_EMISSION, Array3( 0., 0., 0. ) );
-    glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b ) );
-    glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b ) );
+    glMaterialfv( GL_FRONT, GL_AMBIENT, Array3( r, g, b, a ) );
+    glMaterialfv( GL_FRONT, GL_DIFFUSE, Array3( r, g, b, a ) );
     glMaterialfv( GL_FRONT, GL_SPECULAR, MulArray3( .8f, White ) );
     glMaterialf ( GL_FRONT, GL_SHININESS, shininess );
 }
@@ -315,7 +327,7 @@ BreakBlock(float x, float y, float z)
         }
     }
 
-    Blocks[(int) x][(int) y][(int) z] = block{0, 0., 0., 0., 0.};
+    Blocks[(int) x][(int) y][(int) z] = block{0, 0., 0., 0., 1., 0.};
     return 1;
 }
 
@@ -328,7 +340,7 @@ InitGame()
             for(int x = 0; x < WORLD_SIZE; x++){
                 // Do a grass ground and air elsewhere
                 if(y == 0){
-                    PlaceBlock(x, y, z, block{1, .4, .8, 0., 0.});
+                    PlaceBlock(x, y, z, block{1, .4, .8, 0., 1., 0.});
                 }else{
                     BreakBlock(x, y, z);
                 }
@@ -337,8 +349,11 @@ InitGame()
     }
 
     // Place some light blocks
-    PlaceBlock(5, 3, 2, block{1, 1., 1., 1., 1.});
-    PlaceBlock(5, 5, 7, block{1, 1., 1., 1., 1.});
+    PlaceBlock(5, 3, 2, block{1, 1., 1., 1., 1., 1.});
+    PlaceBlock(5, 5, 7, block{1, 1., 1., 1., 1., 1.});
+
+    // Place some transparent blocks
+    PlaceBlock(7, 1, 3, block{1, 1., 0., 0., 0.5, 0.});
 
     // Initialize the player
     Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7};
@@ -515,26 +530,47 @@ Display( )
     // Do lighting
     glEnable( GL_LIGHTING );
 
-    // Draw the world
+    // Draw the non-transparent objects in the world
     glShadeModel( GL_FLAT );
     for(int z = 0; z < WORLD_SIZE; z++){
         for(int y = 0; y < WORLD_SIZE; y++){
             for(int x = 0; x < WORLD_SIZE; x++){
-                glPushMatrix();
-                    struct block *b = &Blocks[x][y][z];
+                struct block *b = &Blocks[x][y][z];
+                if(b->a == 1.){
                     if(b->exists){
-                        glTranslatef((float) x, (float) y, (float) z);
-                        SetMaterial(b->r, b->g, b->b, 1.);
-                        glutSolidCube(1.);
+                        glPushMatrix();
+                            glTranslatef((float) x, (float) y, (float) z);
+                            SetMaterial(b->r, b->g, b->b, b->a, 1.);
+                            glutSolidCube(1.);
+                        glPopMatrix();
                     }
-                glPopMatrix();
+                }
             }
         }
     }
-        //SetPointLight(GL_LIGHT2, 0., 0., 0., 0., 1., 0.);
-        //glEnable(GL_LIGHT2);
-        //glDisable(GL_LIGHT2);
-        //SetMaterial(0.5, 0., 0., 1.);
+
+    // Draw the transparent objects in the world
+    glEnable( GL_BLEND );
+    glDepthMask( GL_FALSE );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                struct block *b = &Blocks[x][y][z];
+                if(b->a < 1.){
+                    if(b->exists){
+                        glPushMatrix();
+                            glTranslatef((float) x, (float) y, (float) z);
+                            SetMaterial(b->r, b->g, b->b, b->a, 1.);
+                            glutSolidCube(1.);
+                        glPopMatrix();
+                    }
+                }
+            }
+        }
+    }
+    glDepthMask( GL_TRUE );
+    glDisable( GL_BLEND );
 
     // swap the double-buffered framebuffers:
 
