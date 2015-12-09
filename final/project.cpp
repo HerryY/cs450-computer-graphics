@@ -55,6 +55,7 @@ struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
 struct player Player;
 struct light Lights[MAX_LIGHTS];
 int cur_lights;
+int View; // 0 for first person, 1 for third person
 
 float ms_per_tick = 1000 / TICKS_PER_SECOND;
 float curtime = 0.;
@@ -356,7 +357,7 @@ InitGame()
     PlaceBlock(7, 1, 3, block{1, 1., 0., 0., 0.5, 0.});
 
     // Initialize the player
-    Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7};
+    Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7, .5};
 }
 
 // Make the player move based on velocity
@@ -481,16 +482,34 @@ Display( )
     float lookdy = sin(Player.av);
     float lookdx = cos(Player.ah)*(1-myabs(lookdy));
     float lookdz = sin(Player.ah)*(1-myabs(lookdy));
-    gluLookAt(
-            Player.x,
-            Player.y,
-            Player.z,
-            Player.x + lookdx,
-            Player.y + lookdy,
-            Player.z + lookdz,
-            0.,
-            1.,
-            0.);
+
+    // First person
+    if(View == 0){
+        fprintf(stderr, "Camera pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
+        gluLookAt(
+                Player.x,
+                Player.y,
+                Player.z,
+                Player.x + lookdx,
+                Player.y + lookdy,
+                Player.z + lookdz,
+                0.,
+                1.,
+                0.);
+    // Third person
+    }else{
+        fprintf(stderr, "Camera pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
+        gluLookAt(
+                Player.x - lookdx*10,
+                Player.y - lookdy*10,
+                Player.z - lookdz*10,
+                Player.x,
+                Player.y,
+                Player.z,
+                0.,
+                1.,
+                0.);
+    }
 
     // uniformly scale the scene:
     if( Scale < MINSCALE )
@@ -569,6 +588,20 @@ Display( )
             }
         }
     }
+
+    // Draw the player
+    if(View == 1){ // Only draw in third person mode
+        glPushMatrix();
+            glTranslatef(Player.x/2, Player.y/2, Player.z/2);
+            fprintf(stderr, "Player pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
+            glRotatef(-Player.ah*180/M_PI, 0., 1., 0.);
+            glScalef(1., 2., 1.);
+            SetMaterial(Player.r, Player.g, Player.b, Player.a, 1.);
+            glutSolidCube(1.);
+        glPopMatrix();
+    }
+
+    // Disable transparency
     glDepthMask( GL_TRUE );
     glDisable( GL_BLEND );
 
@@ -888,6 +921,11 @@ Keyboard( unsigned char c, int x, int y )
                 glutIdleFunc( Animate );
             break;
 
+        case 'v':
+        case 'V':
+            View = !View;
+            break;
+
         case 'w':
         case 'W':
             Player.vx += cos(Player.ah+M_PI*0.0);
@@ -1042,6 +1080,7 @@ Reset( )
     Scale  = 2.0;
     WhichColor = WHITE;
     WhichProjection = PERSP;
+    View = 0;
 }
 
 
