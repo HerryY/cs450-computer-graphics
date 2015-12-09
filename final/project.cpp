@@ -297,23 +297,6 @@ FindExistingLight(float x, float y, float z)
 }
 
 int
-PlaceBlock(float x, float y, float z, struct block b)
-{
-    if(b.light > 0.){
-        int lightid = FindFreeLight();
-        if(lightid >= 0){
-            Lights[lightid] = light{1, x, y, z, b.r, b.g, b.b};
-        }else{
-            fprintf(stderr, "Cannot create light; already have max number (%d)\n", MAX_LIGHTS);
-            return 0;
-        }
-    }
-
-    Blocks[(int) x][(int) y][(int) z] = b;
-    return 1;
-}
-
-int
 BreakBlock(float x, float y, float z)
 {
     struct block *b = &Blocks[(int) x][(int) y][(int) z];
@@ -328,6 +311,25 @@ BreakBlock(float x, float y, float z)
     }
 
     Blocks[(int) x][(int) y][(int) z] = block{0, 0., 0., 0., 1., 0.};
+    return 1;
+}
+
+int
+PlaceBlock(float x, float y, float z, struct block b)
+{
+    BreakBlock(x, y, z);
+
+    if(b.light > 0.){
+        int lightid = FindFreeLight();
+        if(lightid >= 0){
+            Lights[lightid] = light{1, x, y, z, b.r, b.g, b.b};
+        }else{
+            fprintf(stderr, "Cannot create light; already have max number (%d)\n", MAX_LIGHTS);
+            return 0;
+        }
+    }
+
+    Blocks[(int) x][(int) y][(int) z] = b;
     return 1;
 }
 
@@ -679,6 +681,14 @@ Display( )
         glutSolidCube(1.);
     glPopMatrix();
 
+    // Draw an indicator for the selected block in front of the player
+    int *coords = GetBlockInFrontOfPlayer();
+    struct block *b = &Blocks[coords[0]][coords[1]][coords[2]];
+    glPushMatrix();
+        glTranslatef((float) coords[0], (float) coords[1], (float) coords[2]);
+        glutWireCube(1.);
+    glPopMatrix();
+
     // swap the double-buffered framebuffers:
 
     glutSwapBuffers( );
@@ -1027,12 +1037,12 @@ Keyboard( unsigned char c, int x, int y )
             break;
 
         case ' ':
-            Player.vy += 1.;
+            Player.vy += .5;
             break;
 
         case 'q':
         case 'Q':
-            Player.vy -= 1.;
+            Player.vy -= .5;
             break;
 
         // Break a block in front of the player
@@ -1041,10 +1051,16 @@ Keyboard( unsigned char c, int x, int y )
             BreakBlock(coords[0], coords[1], coords[2]);
             break;
 
-        // Place a block in front of the player
-        case '.':
+        // Place a red block in front of the player
+        case 'n':
             coords = GetBlockInFrontOfPlayer();
             PlaceBlock(coords[0], coords[1], coords[2], block{1, 1., 0., 0., .5, 0.});
+            break;
+
+        // Place a light block in front of the player
+        case 'm':
+            coords = GetBlockInFrontOfPlayer();
+            PlaceBlock(coords[0], coords[1], coords[2], block{1, 1., 0., 0., 1., 1.});
             break;
 
         case ESCAPE:
