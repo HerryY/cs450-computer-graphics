@@ -53,6 +53,7 @@ int  Xmouse, Ymouse;   // mouse values
 bool    Frozen;
 struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
 struct player Player;
+struct player Bird;
 struct light Lights[MAX_LIGHTS];
 int cur_lights;
 int View; // 0 for first person, 1 for third person
@@ -393,6 +394,9 @@ InitGame()
 
     // Initialize the player
     Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7, .5};
+
+    // Initialize a bird
+    Bird = player{0., 0., 0., 0., 0., 0., 0., 0., 0., .2, 1., 1.};
 }
 
 // Make the player move based on velocity
@@ -420,11 +424,21 @@ PlayerMove()
     Player.z += Player.vz;
 }
 
+// Make the bird move based on a circle
+void
+BirdMove()
+{
+    int period = 20; // Seconds for 1 revolution
+    float time = (float) (ticks % (TICKS_PER_SECOND * period)) / (TICKS_PER_SECOND * period);
+    Bird.ah = time*M_PI*2;
+}
+
 void
 Tick()
 {
     ticks++;
     PlayerMove();
+    BirdMove();
 }
 
 // this is where one would put code that is to be called
@@ -642,7 +656,7 @@ Display( )
     if(View == 1){ // Only draw in third person mode
         glPushMatrix();
             glTranslatef(Player.x/2, Player.y/2, Player.z/2);
-            fprintf(stderr, "Player pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
+            //fprintf(stderr, "Player pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
             glRotatef(-Player.ah*180/M_PI, 0., 1., 0.);
             glScalef(1., 2., 1.);
             SetMaterial(Player.r, Player.g, Player.b, Player.a, 1.);
@@ -653,6 +667,17 @@ Display( )
     // Disable transparency
     glDepthMask( GL_TRUE );
     glDisable( GL_BLEND );
+
+    // Draw the bird
+    glPushMatrix();
+        glTranslatef(20., 10., 20.);
+        //fprintf(stderr, "Player pos: %f, %f, %f\n", Player.x, Player.y, Player.z);
+        glRotatef(Bird.ah*180/M_PI, 0., 1., 0.);
+        glTranslatef(10., 0., 0.);
+        glScalef(.5, .5, .5);
+        SetMaterial(Bird.r, Bird.g, Bird.b, Bird.a, 1.);
+        glutSolidCube(1.);
+    glPopMatrix();
 
     // swap the double-buffered framebuffers:
 

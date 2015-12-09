@@ -1,4 +1,4 @@
-#define TICKS_PER_SECOND 30
+#define TICKS_PER_SECOND 60
 #define WORLD_SIZE 50
 #define VELOCITY_DROPOFF 0.8
 #define MAX_VELOCITY 1.
