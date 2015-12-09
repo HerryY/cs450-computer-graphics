@@ -1,6 +1,8 @@
 #define TICKS_PER_SECOND 30
+#define WORLD_SIZE 10
 #define VELOCITY_DROPOFF 0.8
 #define MAX_VELOCITY 1.
+#define MAX_LIGHTS 10
 
 struct block {
     int exists; // 0 means the block is empty, 1 means it is not
@@ -27,7 +29,13 @@ struct player {
     float b;
 };
 
-#define WORLD_SIZE 10
+struct light {
+    int exists;
+    float x;
+    float y;
+    float z;
+};
+
 // NOTE: There are a lot of good reasons to use const variables instead
 // of #define's.  However, Visual C++ does not allow a const variable
 // to be used as an array size or as the case in a switch( ) statement.  So in

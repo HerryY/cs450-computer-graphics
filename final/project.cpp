@@ -53,16 +53,20 @@ int  Xmouse, Ymouse;   // mouse values
 bool    Frozen;
 struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
 struct player Player;
+struct light Lights[MAX_LIGHTS];
+int cur_lights;
 
 float ms_per_tick = 1000 / TICKS_PER_SECOND;
 float curtime = 0.;
 float prevtime = 0.;
 float tick_debt = 0.;
+unsigned long ticks = 0;
 
 float White[ ] = { 1.,1.,1.,1. };
 
 // function prototypes:
 
+void InitGame();
 void Animate( );
 void Display( );
 void DoAxesMenu( int );
@@ -222,6 +226,9 @@ main( int argc, char *argv[ ] )
 
     InitGraphics( );
 
+    // Init the world, player, etc.
+
+    InitGame();
 
     // create the display structures that will not change:
 
@@ -251,10 +258,96 @@ main( int argc, char *argv[ ] )
     return 0;
 }
 
-void
-Tick( )
+int
+FindFreeLight()
 {
-    // Make the player move based on velocity
+    if(cur_lights < MAX_LIGHTS){
+        for(int i = 0; i < MAX_LIGHTS; i++){
+            if(!Lights[i].exists){
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+int
+FindExistingLight(float x, float y, float z)
+{
+    for(int i = 0; i < MAX_LIGHTS; i++){
+        if(Lights[i].x == x && Lights[i].y == y && Lights[i].z == z){
+            return i;
+        }
+    }
+    return -1;
+}
+
+int
+PlaceBlock(float x, float y, float z, struct block b)
+{
+    if(b.light > 0.){
+        int lightid = FindFreeLight();
+        if(lightid >= 0){
+            Lights[lightid] = light{1, x, y, z};
+            SetPointLight(GL_LIGHT0+lightid, x, y, z, b.r, b.g, b.b);
+        }else{
+            fprintf(stderr, "Cannot create light; already have max number (%d)\n", MAX_LIGHTS);
+            return 0;
+        }
+    }
+
+    Blocks[(int) x][(int) y][(int) z] = b;
+    return 1;
+}
+
+int
+BreakBlock(float x, float y, float z)
+{
+    struct block *b = &Blocks[(int) x][(int) y][(int) z];
+    if(b->light > 0.){
+        int lightid = FindExistingLight(x, y, z);
+        if(lightid >= 0){
+            Lights[lightid] = light{0, 0., 0., 0.};
+            glDisable(GL_LIGHT0+lightid);
+        }else{
+            fprintf(stderr, "Cannot destroy light; could not find light at (%f, %f, %f)\n", x, y, z);
+            return 0;
+        }
+    }
+
+    Blocks[(int) x][(int) y][(int) z] = block{0, 0., 0., 0., 0.};
+    return 1;
+}
+
+void
+InitGame()
+{
+    // Initialize blocks in the world
+    for(int z = 0; z < WORLD_SIZE; z++){
+        for(int y = 0; y < WORLD_SIZE; y++){
+            for(int x = 0; x < WORLD_SIZE; x++){
+                // Do a grass ground and air elsewhere
+                if(y == 0){
+                    PlaceBlock(x, y, z, block{1, .4, .8, 0., 0.});
+                }else{
+                    BreakBlock(x, y, z);
+                }
+            }
+        }
+    }
+
+    // Place some light blocks
+    PlaceBlock(5, 3, 2, block{1, 1., 1., 1., 1.});
+    PlaceBlock(5, 5, 7, block{1, 1., 1., 1., 1.});
+
+    // Initialize the player
+    Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7};
+}
+
+// Make the player move based on velocity
+void
+PlayerMove()
+{
     // TODO: Cap the vector rather than each component individually
     Player.vx *= VELOCITY_DROPOFF;
     Player.vy *= VELOCITY_DROPOFF;
@@ -274,6 +367,13 @@ Tick( )
     Player.x += Player.vx;
     Player.y += Player.vy;
     Player.z += Player.vz;
+}
+
+void
+Tick()
+{
+    ticks++;
+    PlayerMove();
 }
 
 // this is where one would put code that is to be called
@@ -426,9 +526,6 @@ Display( )
                         glTranslatef((float) x, (float) y, (float) z);
                         SetMaterial(b->r, b->g, b->b, 1.);
                         glutSolidCube(1.);
-                        if(b->light > 0.){
-                            SetPointLight(GL_LIGHT0, 0., 0., 0., 0., 1., 0.);
-                        }
                     }
                 glPopMatrix();
             }
@@ -702,25 +799,6 @@ InitGraphics( )
         fprintf( stderr, "GLEW initialized OK\n" );
     fprintf( stderr, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 #endif
-
-    // Initialize blocks in the world
-    for(int z = 0; z < WORLD_SIZE; z++){
-        for(int y = 0; y < WORLD_SIZE; y++){
-            for(int x = 0; x < WORLD_SIZE; x++){
-                // Do a grass ground and air elsewhere
-                if(y == 0){
-                    Blocks[x][y][z] = block{1, .4, .8, 0., 0.};
-                }else{
-                    Blocks[x][y][z] = block{0, 0., 0., 0., 0.};
-                }
-            }
-        }
-    }
-    Blocks[5][5][5] = block{1, 1., 1., 0., 1.};
-
-    // Initialize the player
-    Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7};
-
 }
 
 
@@ -895,7 +973,7 @@ MouseMotion( int x, int y )
         // since sin() and cos() use radians
         Player.ah += ( ANGFACT*dx/180*M_PI );
         Player.av += ( -ANGFACT*dy/180*M_PI );
-        fprintf(stderr, "Player.av: %f\n", Player.av);
+        //fprintf(stderr, "Player.av: %f\n", Player.av);
         // Stop turning past straight up/down
         // But also make perfectly straight/up down impossible so horizontal direction is preserved
         float max = M_PI / 2 - 0.05;
