@@ -51,9 +51,13 @@ int  WhichColor;    // index into Colors[ ]
 int  WhichProjection;  // ORTHO or PERSP
 int  Xmouse, Ymouse;   // mouse values
 bool    Frozen;
-double Time = 0.;
 struct block Blocks[WORLD_SIZE][WORLD_SIZE][WORLD_SIZE];
 struct player Player;
+
+float ms_per_tick = 1000 / TICKS_PER_SECOND;
+float curtime = 0.;
+float prevtime = 0.;
+float tick_debt = 0.;
 
 float White[ ] = { 1.,1.,1.,1. };
 
@@ -247,6 +251,30 @@ main( int argc, char *argv[ ] )
     return 0;
 }
 
+void
+Tick( )
+{
+    // Make the player move based on velocity
+    // TODO: Cap the vector rather than each component individually
+    Player.vx *= VELOCITY_DROPOFF;
+    Player.vy *= VELOCITY_DROPOFF;
+    Player.vz *= VELOCITY_DROPOFF;
+
+    if(Player.vx > MAX_VELOCITY) Player.vx = MAX_VELOCITY;
+    if(Player.vy > MAX_VELOCITY) Player.vy = MAX_VELOCITY;
+    if(Player.vz > MAX_VELOCITY) Player.vz = MAX_VELOCITY;
+    if(Player.vx < -MAX_VELOCITY) Player.vx = -MAX_VELOCITY;
+    if(Player.vy < -MAX_VELOCITY) Player.vy = -MAX_VELOCITY;
+    if(Player.vz < -MAX_VELOCITY) Player.vz = -MAX_VELOCITY;
+
+    //fprintf(stderr, "vx: %f\n", Player.vx);
+    //fprintf(stderr, "vy: %f\n", Player.vy);
+    //fprintf(stderr, "vz: %f\n", Player.vz);
+
+    Player.x += Player.vx;
+    Player.y += Player.vy;
+    Player.z += Player.vz;
+}
 
 // this is where one would put code that is to be called
 // everytime the glut main loop has nothing to do
@@ -265,6 +293,15 @@ Animate( )
 
     glutSetWindow( MainWindow );
     glutPostRedisplay( );
+
+    // Call Tick() every so often based on TICKS_PER_SECOND
+    curtime = glutGet( GLUT_ELAPSED_TIME );
+    tick_debt += curtime - prevtime;
+    prevtime = curtime;
+    while(tick_debt > ms_per_tick){
+        Tick();
+        tick_debt -= ms_per_tick;
+    }
 }
 
 
@@ -329,8 +366,6 @@ Display( )
     float lookdy = sin(Player.av);
     float lookdx = cos(Player.ah)*(1-myabs(lookdy));
     float lookdz = sin(Player.ah)*(1-myabs(lookdy));
-    fprintf(stderr, "abs: %f\n", myabs(-5.));
-    fprintf(stderr, "lookd: %f, %f, %f\n", lookdx, lookdy, lookdz);
     gluLookAt(
             Player.x,
             Player.y,
@@ -684,7 +719,7 @@ InitGraphics( )
     Blocks[5][5][5] = block{1, 1., 1., 0., 1.};
 
     // Initialize the player
-    Player = player{5., 3., 5., 0., 0., 1., .5, .7};
+    Player = player{5., 3., 5., 0., 0., 0., 0., 0., 1., .5, .7};
 
 }
 
@@ -741,26 +776,26 @@ Keyboard( unsigned char c, int x, int y )
 
         case 'w':
         case 'W':
-            Player.x += cos(Player.ah+M_PI*0.0);
-            Player.z += sin(Player.ah+M_PI*0.0);
+            Player.vx += cos(Player.ah+M_PI*0.0);
+            Player.vz += sin(Player.ah+M_PI*0.0);
             break;
 
         case 'd':
         case 'D':
-            Player.x += cos(Player.ah+M_PI*0.5);
-            Player.z += sin(Player.ah+M_PI*0.5);
+            Player.vx += cos(Player.ah+M_PI*0.5);
+            Player.vz += sin(Player.ah+M_PI*0.5);
             break;
 
         case 's':
         case 'S':
-            Player.x += cos(Player.ah+M_PI*1.0);
-            Player.z += sin(Player.ah+M_PI*1.0);
+            Player.vx += cos(Player.ah+M_PI*1.0);
+            Player.vz += sin(Player.ah+M_PI*1.0);
             break;
 
         case 'a':
         case 'A':
-            Player.x += cos(Player.ah+M_PI*1.5);
-            Player.z += sin(Player.ah+M_PI*1.5);
+            Player.vx += cos(Player.ah+M_PI*1.5);
+            Player.vz += sin(Player.ah+M_PI*1.5);
             break;
 
         case 'q':

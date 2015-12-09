@@ -1,3 +1,7 @@
+#define TICKS_PER_SECOND 30
+#define VELOCITY_DROPOFF 0.8
+#define MAX_VELOCITY 1.
+
 struct block {
     int exists; // 0 means the block is empty, 1 means it is not
     float r;
@@ -7,11 +11,17 @@ struct block {
 };
 
 struct player {
+    // Position
     float x;
     float y;
     float z;
     float ah; // horizontal angle
     float av; // vertical angle
+    // Velocity
+    float vx;
+    float vy;
+    float vz;
+    // Color
     float r;
     float g;
     float b;
