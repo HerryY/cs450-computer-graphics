@@ -330,6 +330,19 @@ BreakBlock(float x, float y, float z)
     return 1;
 }
 
+int* GetBlockInFrontOfPlayer()
+{
+    static int coords[3];
+    float hypo = 2.;
+    float lookdy = sin(Player.av)*hypo;
+    float lookdx = cos(Player.ah)*hypo*(1-myabs(lookdy/2));
+    float lookdz = sin(Player.ah)*hypo*(1-myabs(lookdy/2));
+    coords[0] = round(lookdx + Player.x/2);
+    coords[1] = round(lookdy + Player.y/2);
+    coords[2] = round(lookdz + Player.z/2);
+    return coords;
+}
+
 void
 InitGame()
 {
@@ -936,6 +949,8 @@ Keyboard( unsigned char c, int x, int y )
     if( DebugOn != 0 )
         fprintf( stderr, "Keyboard: '%c' (0x%0x)\n", c, c );
 
+    int *coords;
+
     switch( c )
     {
         case 'o':
@@ -993,6 +1008,18 @@ Keyboard( unsigned char c, int x, int y )
         case 'q':
         case 'Q':
             Player.vy -= 1.;
+            break;
+
+        // Break a block in front of the player
+        case ',':
+            coords = GetBlockInFrontOfPlayer();
+            BreakBlock(coords[0], coords[1], coords[2]);
+            break;
+
+        // Place a block in front of the player
+        case '.':
+            coords = GetBlockInFrontOfPlayer();
+            PlaceBlock(coords[0], coords[1], coords[2], block{1, 1., 0., 0., .5, 0.});
             break;
 
         case ESCAPE:
